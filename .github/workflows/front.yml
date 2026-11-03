@@ -1,0 +1,56 @@
+name: Front
+
+on:
+  push:
+    paths:
+      - "front/**"
+      - ".github/workflows/front.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "front/**"
+      - ".github/workflows/front.yml"
+
+concurrency:
+  group: front-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: front
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: front/.nvmrc
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: |
+          npm run lint
+          npm run format:check
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build-only
+
+      - name: Build Docker image
+        if: github.event_name == 'pull_request'
+        run: docker build -t projectsmonitor-front .

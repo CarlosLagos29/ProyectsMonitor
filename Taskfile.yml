@@ -1,0 +1,60 @@
+version: '3'
+
+tasks:
+  start:
+    desc: Build the images if needed, start Postgres, back and front, and follow the logs (Ctrl+C stops the logs, not the services)
+    cmds:
+      - docker compose up --build -d
+      - docker compose logs -f
+
+  logs:
+    desc: Follow the logs of all services
+    cmds:
+      - docker compose logs -f
+
+  stop:
+    desc: Stop and remove the containers (keeps the images and the database volume)
+    cmds:
+      - docker compose down
+
+  delete:
+    desc: Remove everything this project created in Docker (containers, network, database volume and built images)
+    cmds:
+      - docker compose down --rmi local --volumes --remove-orphans
+
+  lint:
+    desc: Run the linters of back and front
+    cmds:
+      - task: lint:back
+      - task: lint:front
+
+  lint:back:
+    desc: Run ktlint on the back (needs JDK 17+ in JAVA_HOME)
+    dir: back
+    cmds:
+      - ./gradlew ktlintCheck
+
+  lint:front:
+    desc: Run ESLint and the Prettier check on the front
+    dir: front
+    cmds:
+      - npm run lint
+      - npm run format:check
+
+  format:
+    desc: Format back (ktlint) and front (Prettier)
+    cmds:
+      - task: format:back
+      - task: format:front
+
+  format:back:
+    desc: Fix the back formatting with ktlint (needs JDK 17+ in JAVA_HOME)
+    dir: back
+    cmds:
+      - ./gradlew ktlintFormat
+
+  format:front:
+    desc: Fix the front formatting with Prettier
+    dir: front
+    cmds:
+      - npm run format
