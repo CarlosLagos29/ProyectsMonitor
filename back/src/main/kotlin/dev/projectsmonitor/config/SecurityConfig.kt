@@ -16,7 +16,7 @@ class SecurityConfig {
         .formLogin { it.disable() }
         .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
         .authorizeHttpRequests {
-            it.requestMatchers("/actuator/health/**", "/docs/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+            it.requestMatchers("/", "/actuator/health/**", "/docs/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
             it.anyRequest().denyAll()
         }
         .build()

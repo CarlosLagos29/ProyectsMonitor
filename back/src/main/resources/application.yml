@@ -1,6 +1,9 @@
 server:
   port: ${PORT:8080}
   forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      remote-ip-header: CF-Connecting-IP
 
 spring:
   application:
@@ -43,6 +46,16 @@ app:
     password: ${ADMIN_PASSWORD:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+  check:
+    timeouts:
+      connect: 2s
+      read: 2s
+      total: 10s
+    max-redirects: 5
+    allowed-ports: [80, 443]
+    per-host:
+      capacity: 10
+      period: 1m
 
 logging:
   level:
