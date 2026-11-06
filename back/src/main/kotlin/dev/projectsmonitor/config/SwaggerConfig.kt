@@ -1,10 +1,13 @@
 package dev.projectsmonitor.config
 
+import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.ExternalDocumentation
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.info.License
+import io.swagger.v3.oas.models.security.SecurityRequirement
+import io.swagger.v3.oas.models.security.SecurityScheme
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -20,6 +23,7 @@ class SwaggerConfig : WebMvcConfigurer {
 
     private companion object {
         val LOG: Logger = LoggerFactory.getLogger(SwaggerConfig::class.java)
+        const val BEARER_SCHEME = "bearer"
         const val REPOSITORY_URL = "https://github.com/CarlosLagos29/ProjectsMonitor"
     }
 
@@ -50,4 +54,11 @@ class SwaggerConfig : WebMvcConfigurer {
                 .license(License().name("MIT").url("$REPOSITORY_URL/blob/main/LICENSE")),
         )
         .externalDocs(ExternalDocumentation().description("Source code").url(REPOSITORY_URL))
+        .components(
+            Components().addSecuritySchemes(
+                BEARER_SCHEME,
+                SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer"),
+            ),
+        )
+        .addSecurityItem(SecurityRequirement().addList(BEARER_SCHEME))
 }

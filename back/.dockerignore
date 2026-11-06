@@ -4,3 +4,5 @@
 build
 *.md
 .editorconfig
+.env
+.env.*

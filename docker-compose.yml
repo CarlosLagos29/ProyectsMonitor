@@ -17,6 +17,9 @@ services:
 
   back:
     build: ./back
+    env_file:
+      - path: ./back/.env
+        required: false
     environment:
       SPRING_PROFILES_ACTIVE: docker
       PORT: 8080
@@ -25,10 +28,7 @@ services:
       DB_NAME: ${DB_NAME:-monitor}
       DB_USER: ${DB_USER:-monitor}
       DB_PASSWORD: ${DB_PASSWORD:-monitor}
-      JWT_SECRET: ${JWT_SECRET:-}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
     ports:
       - "8080:8080"
     mem_limit: 512m

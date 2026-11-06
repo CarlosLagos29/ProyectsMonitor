@@ -78,6 +78,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest,
     ): ResponseEntity<Any>? {
         LOG.warn("Unreadable request body")
-        return super.handleHttpMessageNotReadable(ex, headers, status, request)
+        val body = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Unreadable request body").apply {
+            setProperty("reason", ApiErrorReason.VALIDATION_ERROR)
+        }
+        return handleExceptionInternal(ex, body, headers, status, request)
     }
 }
