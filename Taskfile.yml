@@ -7,15 +7,52 @@ tasks:
       - docker compose up --build -d
       - docker compose logs -f
 
+  start:*:
+    desc: Build if needed and start one service (back, front or postgres) and follow its logs
+    vars:
+      SERVICE: '{{index .MATCH 0}}'
+    cmds:
+      - docker compose up --build -d {{.SERVICE}}
+      - docker compose logs -f {{.SERVICE}}
+
+  restart:
+    desc: Stop everything, rebuild the images if needed, start again and follow the logs
+    cmds:
+      - docker compose down
+      - docker compose up --build -d
+      - docker compose logs -f
+
+  restart:*:
+    desc: Rebuild if needed and recreate one service (back, front or postgres) without touching the others, then follow its logs
+    vars:
+      SERVICE: '{{index .MATCH 0}}'
+    cmds:
+      - docker compose up --build -d --force-recreate --no-deps {{.SERVICE}}
+      - docker compose logs -f {{.SERVICE}}
+
   logs:
     desc: Follow the logs of all services
     cmds:
       - docker compose logs -f
 
+  logs:*:
+    desc: Follow the logs of one service (back, front or postgres)
+    vars:
+      SERVICE: '{{index .MATCH 0}}'
+    cmds:
+      - docker compose logs -f {{.SERVICE}}
+
   stop:
     desc: Stop and remove the containers (keeps the images and the database volume)
     cmds:
       - docker compose down
+
+  stop:*:
+    desc: Stop and remove one service (back, front or postgres), keeping its image and the database volume
+    vars:
+      SERVICE: '{{index .MATCH 0}}'
+    cmds:
+      - docker compose rm --stop --force {{.SERVICE}}
 
   delete:
     desc: Remove everything this project created in Docker (containers, network, database volume and built images)
