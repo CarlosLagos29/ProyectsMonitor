@@ -3,6 +3,7 @@ package dev.projectsmonitor.auth
 import dev.projectsmonitor.auth.dto.LoginRequest
 import dev.projectsmonitor.auth.dto.MeResponse
 import dev.projectsmonitor.auth.dto.TokenResponse
+import dev.projectsmonitor.auth.mapper.AuthMapper
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
@@ -31,7 +32,7 @@ class AuthController(private val authService: AuthService) {
         LOG.info("Admin login requested")
         val issued = authService.login(request.email, request.password, httpRequest.remoteAddr)
         LOG.info("Admin token issued: expiresAt={}", issued.user.expiresAt)
-        return TokenResponse.from(issued)
+        return AuthMapper.toTokenResponse(issued)
     }
 
     @PostMapping("/guest")
@@ -40,10 +41,10 @@ class AuthController(private val authService: AuthService) {
         LOG.info("Guest token requested")
         val issued = authService.issueGuestToken(httpRequest.remoteAddr)
         LOG.info("Guest token issued: guest={} expiresAt={}", issued.user.id, issued.user.expiresAt)
-        return TokenResponse.from(issued)
+        return AuthMapper.toTokenResponse(issued)
     }
 
     @GetMapping("/me")
     @MeDocs
-    fun me(user: CurrentUser): MeResponse = MeResponse.from(user, authService.limits)
+    fun me(user: CurrentUser): MeResponse = AuthMapper.toMeResponse(user, authService.limits)
 }

@@ -14,8 +14,4 @@ data class UserResponse(
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Role of the user", example = "GUEST")
     val role: Role,
-) {
-    companion object {
-        fun from(user: CurrentUser) = UserResponse(id = user.id, role = user.role)
-    }
-}
+)

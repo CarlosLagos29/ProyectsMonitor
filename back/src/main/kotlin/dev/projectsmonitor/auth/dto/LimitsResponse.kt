@@ -33,15 +33,4 @@ data class LimitsResponse(
         example = "60",
     )
     val manualCheckCooldownSeconds: Long,
-) {
-    companion object {
-        private const val GUEST_MAX_MONITORS = 1
-
-        fun from(role: Role, limits: AppProperties.Limits) = LimitsResponse(
-            maxMonitors = if (role == Role.GUEST) GUEST_MAX_MONITORS else null,
-            canSetPublic = role == Role.ADMIN,
-            checkIntervalSeconds = limits.checkInterval.seconds,
-            manualCheckCooldownSeconds = limits.manualCheckCooldown.seconds,
-        )
-    }
-}
+)

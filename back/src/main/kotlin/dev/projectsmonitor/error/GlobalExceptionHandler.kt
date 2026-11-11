@@ -3,6 +3,7 @@ package dev.projectsmonitor.error
 import dev.projectsmonitor.common.toLogSafe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.TypeMismatchException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
@@ -53,6 +54,19 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
             setProperty("errors", errors)
         }
         return handleExceptionInternal(ex, body, headers, status, request)
+    }
+
+    override fun handleTypeMismatch(
+        ex: TypeMismatchException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest,
+    ): ResponseEntity<Any>? {
+        LOG.warn("Malformed path or parameter: {}", ex.propertyName)
+        val body = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found").apply {
+            setProperty("reason", ApiErrorReason.NOT_FOUND)
+        }
+        return handleExceptionInternal(ex, body, headers, HttpStatus.NOT_FOUND, request)
     }
 
     override fun handleHttpMessageNotReadable(

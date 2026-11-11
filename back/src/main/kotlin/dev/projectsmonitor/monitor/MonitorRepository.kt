@@ -20,9 +20,7 @@ interface MonitorRepository : JpaRepository<Monitor, UUID> {
     )
     fun findVisibleToGuest(guestId: UUID, now: Instant): List<Monitor>
 
-    fun findByOwnerIdAndExpiresAtAfter(ownerId: UUID, now: Instant): Monitor?
-
-    fun countByOwnerIdIsNull(): Long
+    fun findByOwnerId(ownerId: UUID): Monitor?
 
     @Query("select count(m) from Monitor m where m.ownerId is not null and m.expiresAt > :now")
     fun countActiveGuestMonitors(now: Instant): Long

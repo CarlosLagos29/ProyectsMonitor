@@ -18,12 +18,4 @@ data class MeResponse(
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Limits of the user's role")
     val limits: LimitsResponse,
-) {
-    companion object {
-        fun from(user: CurrentUser, limits: AppProperties.Limits) = MeResponse(
-            user = UserResponse.from(user),
-            expiresAt = user.expiresAt,
-            limits = LimitsResponse.from(user.role, limits),
-        )
-    }
-}
+)

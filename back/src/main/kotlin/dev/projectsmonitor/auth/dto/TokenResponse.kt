@@ -21,12 +21,4 @@ data class TokenResponse(
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "User the token belongs to")
     val user: UserResponse,
-) {
-    companion object {
-        fun from(issued: IssuedToken) = TokenResponse(
-            token = issued.token,
-            expiresAt = issued.user.expiresAt,
-            user = UserResponse.from(issued.user),
-        )
-    }
-}
+)
