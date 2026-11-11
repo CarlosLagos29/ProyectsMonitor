@@ -14,5 +14,13 @@ export default defineConfigWithVueTs(
   ...pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
 
+  {
+    name: 'app/options-api',
+    rules: {
+      'vue/component-api-style': ['error', ['options']],
+      'vue/block-order': ['error', { order: ['template', 'script', 'style'] }],
+    },
+  },
+
   skipFormatting,
 )
