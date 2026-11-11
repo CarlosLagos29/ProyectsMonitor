@@ -2,7 +2,7 @@ package dev.projectsmonitor.check
 
 import dev.projectsmonitor.common.enums.HealthReason
 import dev.projectsmonitor.common.enums.HealthStatus
-import dev.projectsmonitor.security.RejectedAddressException
+import dev.projectsmonitor.ssrf.RejectedAddressException
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.net.UnknownHostException

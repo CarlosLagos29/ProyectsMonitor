@@ -4,8 +4,6 @@ create table monitors (
     expires_at timestamp(6) with time zone,
     name varchar(60) not null,
     url text not null,
-    interval_seconds integer not null,
-    timeout_seconds integer,
     is_public boolean not null,
     enabled boolean not null,
     next_check_at timestamp(6) with time zone not null,

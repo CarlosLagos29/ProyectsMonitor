@@ -9,18 +9,18 @@ import java.time.Duration
 import java.time.Instant
 
 @Service
-class HealthCheckService(private val redirectFollower: RedirectFollower) : HealthChecker {
+class HealthCheckService(private val redirectFollower: RedirectFollower) {
 
     companion object {
         private val LOG: Logger = LoggerFactory.getLogger(HealthCheckService::class.java)
         private const val USER_AGENT = "ProjectsMonitor/1.0 (+https://github.com/CarlosLagos29/ProjectsMonitor)"
     }
 
-    override fun check(target: HttpUrl, timeout: Duration?): HealthCheckResult {
+    fun check(target: HttpUrl): HealthCheckResult {
         val start = System.nanoTime()
 
         val result = try {
-            val followed = redirectFollower.execute(headRequest(target), timeout)
+            val followed = redirectFollower.execute(headRequest(target))
             HealthCheckMapper.fromResponse(target, followed, elapsedMs(start), Instant.now())
         } catch (e: FollowFailedException) {
             LOG.debug("Check of {} failed at {}: {}", target, e.lastUrl, e.cause.toString())

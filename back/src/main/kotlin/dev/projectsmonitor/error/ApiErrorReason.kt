@@ -1,7 +1,14 @@
 package dev.projectsmonitor.error
 
 enum class ApiErrorReason {
-    INVALID_URL,
     VALIDATION_ERROR,
+    INVALID_URL,
+    INVALID_API_TOKEN,
+    INVALID_CREDENTIALS,
+    SESSION_EXPIRED,
+    FORBIDDEN_FOR_ROLE,
+    NOT_FOUND,
+    MONITOR_LIMIT_REACHED,
     RATE_LIMITED,
+    GUEST_CAPACITY_REACHED,
 }

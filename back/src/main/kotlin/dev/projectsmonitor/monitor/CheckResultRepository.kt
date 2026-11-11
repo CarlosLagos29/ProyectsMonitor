@@ -1,4 +1,4 @@
-package dev.projectsmonitor.check
+package dev.projectsmonitor.monitor
 
 import dev.projectsmonitor.common.enums.HealthStatus
 import org.springframework.data.jpa.repository.JpaRepository
@@ -24,7 +24,7 @@ interface CheckResultRepository : JpaRepository<CheckResult, Long> {
 
     @Query(
         """
-        select new dev.projectsmonitor.check.UptimeCount(
+        select new dev.projectsmonitor.monitor.UptimeCount(
             r.monitor.id,
             count(r),
             sum(case when r.status = dev.projectsmonitor.common.enums.HealthStatus.UP then 1L else 0L end)
@@ -38,17 +38,13 @@ interface CheckResultRepository : JpaRepository<CheckResult, Long> {
 
     @Query(
         """
-        select new dev.projectsmonitor.check.StatusCount(r.status, count(r))
+        select new dev.projectsmonitor.monitor.StatusCount(r.status, count(r))
         from CheckResult r
         where r.monitor.id = :monitorId and r.checkedAt >= :from
         group by r.status
         """,
     )
     fun countByStatus(monitorId: UUID, from: Instant): List<StatusCount>
-
-    @Modifying
-    @Query("delete from CheckResult r where r.monitor.id = :monitorId")
-    fun deleteByMonitorId(monitorId: UUID): Int
 
     @Modifying
     @Query("delete from CheckResult r where r.checkedAt < :before")

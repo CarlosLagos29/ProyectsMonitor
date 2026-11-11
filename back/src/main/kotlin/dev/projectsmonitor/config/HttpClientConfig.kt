@@ -1,9 +1,9 @@
 package dev.projectsmonitor.config
 
 import dev.projectsmonitor.check.RedirectFollower
-import dev.projectsmonitor.security.IpAddressValidator
-import dev.projectsmonitor.security.SafeDns
-import dev.projectsmonitor.security.SafeUrlInterceptor
+import dev.projectsmonitor.ssrf.IpAddressValidator
+import dev.projectsmonitor.ssrf.SafeDns
+import dev.projectsmonitor.ssrf.SafeUrlInterceptor
 import okhttp3.OkHttpClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

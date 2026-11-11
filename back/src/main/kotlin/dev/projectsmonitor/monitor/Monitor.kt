@@ -34,14 +34,8 @@ class Monitor(
     @Column(nullable = false, length = 60)
     var name: String,
 
-    @Column(nullable = false, columnDefinition = "text")
-    var url: String,
-
-    @Column(name = "interval_seconds", nullable = false)
-    var intervalSeconds: Int,
-
-    @Column(name = "timeout_seconds")
-    var timeoutSeconds: Int? = null,
+    @Column(nullable = false, updatable = false, columnDefinition = "text")
+    val url: String,
 
     @Column(name = "is_public", nullable = false)
     var isPublic: Boolean = false,

@@ -1,8 +1,7 @@
-package dev.projectsmonitor.check
+package dev.projectsmonitor.monitor
 
 import dev.projectsmonitor.common.enums.HealthReason
 import dev.projectsmonitor.common.enums.HealthStatus
-import dev.projectsmonitor.monitor.Monitor
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType

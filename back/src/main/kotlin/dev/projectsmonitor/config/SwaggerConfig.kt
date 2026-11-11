@@ -1,5 +1,6 @@
 package dev.projectsmonitor.config
 
+import dev.projectsmonitor.auth.CurrentUser
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.ExternalDocumentation
 import io.swagger.v3.oas.models.OpenAPI
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
@@ -25,6 +27,10 @@ class SwaggerConfig : WebMvcConfigurer {
         val LOG: Logger = LoggerFactory.getLogger(SwaggerConfig::class.java)
         const val BEARER_SCHEME = "bearer"
         const val REPOSITORY_URL = "https://github.com/CarlosLagos29/ProjectsMonitor"
+    }
+
+    init {
+        SpringDocUtils.getConfig().addRequestWrapperToIgnore(CurrentUser::class.java)
     }
 
     override fun addViewControllers(registry: ViewControllerRegistry) {

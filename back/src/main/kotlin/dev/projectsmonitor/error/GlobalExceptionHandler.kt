@@ -1,8 +1,6 @@
 package dev.projectsmonitor.error
 
-import dev.projectsmonitor.check.InvalidUrlException
 import dev.projectsmonitor.common.toLogSafe
-import dev.projectsmonitor.ratelimit.RateLimitExceededException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import kotlin.math.ceil
 
 @RestControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
@@ -25,29 +22,16 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         private val LOG: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
     }
 
-    @ExceptionHandler(InvalidUrlException::class)
-    fun handleInvalidUrl(ex: InvalidUrlException): ProblemDetail {
-        LOG.warn("Invalid URL: {}", ex.message.orEmpty().toLogSafe())
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.message).apply {
-            title = "Invalid URL"
-            setProperty("reason", ApiErrorReason.INVALID_URL)
+    @ExceptionHandler(ApiException::class)
+    fun handleApiException(ex: ApiException): ResponseEntity<ProblemDetail> {
+        LOG.warn("Request refused: status={} reason={} detail={}", ex.status.value(), ex.reason, ex.message.toLogSafe())
+        val body = ProblemDetail.forStatusAndDetail(ex.status, ex.message).apply {
+            title = ex.status.reasonPhrase
+            setProperty("reason", ex.reason)
         }
-    }
-
-    @ExceptionHandler(RateLimitExceededException::class)
-    fun handleRateLimitExceeded(ex: RateLimitExceededException): ResponseEntity<ProblemDetail> {
-        val retryAfterSeconds = maxOf(1, ceil(ex.retryAfter.toMillis() / 1000.0).toLong())
-        LOG.warn("Rate limit exceeded, retry after {}s", retryAfterSeconds)
-        val body = ProblemDetail.forStatusAndDetail(
-            HttpStatus.TOO_MANY_REQUESTS,
-            "Rate limit exceeded. Try again in $retryAfterSeconds seconds.",
-        ).apply {
-            title = "Too many requests"
-            setProperty("reason", ApiErrorReason.RATE_LIMITED)
-        }
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-            .header(HttpHeaders.RETRY_AFTER, retryAfterSeconds.toString())
-            .body(body)
+        val response = ResponseEntity.status(ex.status)
+        ex.retryAfter?.let { response.header(HttpHeaders.RETRY_AFTER, it.toRetryAfterSeconds().toString()) }
+        return response.body(body)
     }
 
     @ExceptionHandler(Exception::class)
