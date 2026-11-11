@@ -1,4 +1,4 @@
-package dev.projectsmonitor.security
+package dev.projectsmonitor.ssrf
 
 import dev.projectsmonitor.common.enums.HealthReason
 import okhttp3.Dns

@@ -18,18 +18,17 @@ class FollowFailedException(val lastUrl: HttpUrl, val redirects: Int, override v
 class RedirectFollower(
     private val client: OkHttpClient,
     private val maxRedirects: Int,
-    private val defaultTimeout: Duration,
+    private val totalTimeout: Duration,
 ) {
 
-    fun execute(request: Request, timeout: Duration? = null): FollowedResponse {
-        val callClient = if (timeout == null) client else client.newBuilder().readTimeout(timeout).build()
-        val deadline = System.nanoTime() + (timeout ?: defaultTimeout).toNanos()
+    fun execute(request: Request): FollowedResponse {
+        val deadline = System.nanoTime() + totalTimeout.toNanos()
         var current = request
         var redirects = 0
 
         try {
             while (true) {
-                val (code, location) = send(callClient, current, deadline)
+                val (code, location) = send(current, deadline)
 
                 if (current.method == "HEAD" && code in HEAD_NOT_SUPPORTED_CODES) {
                     current = current.newBuilder().get().build()
@@ -52,11 +51,11 @@ class RedirectFollower(
         }
     }
 
-    private fun send(callClient: OkHttpClient, request: Request, deadline: Long): Pair<Int, String?> {
+    private fun send(request: Request, deadline: Long): Pair<Int, String?> {
         val remaining = deadline - System.nanoTime()
         if (remaining <= 0) throw InterruptedIOException("timeout")
 
-        val call = callClient.newCall(request)
+        val call = client.newCall(request)
         call.timeout().timeout(remaining, TimeUnit.NANOSECONDS)
         return call.execute().use { it.code to it.header("Location") }
     }

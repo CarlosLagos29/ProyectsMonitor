@@ -1,4 +1,4 @@
-package dev.projectsmonitor.security
+package dev.projectsmonitor.ssrf
 
 import org.springframework.stereotype.Component
 import java.net.InetAddress

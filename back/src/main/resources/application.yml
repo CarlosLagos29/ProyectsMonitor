@@ -44,11 +44,28 @@ app:
   api-token: ${API_TOKEN:}
   jwt:
     secret: ${JWT_SECRET:}
+    admin-ttl: 1h
+    guest-ttl: 12h
   admin:
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+  limits:
+    check-interval: 10m
+    manual-check-cooldown: 1m
+    guest:
+      max-active: 10
+      manual-checks:
+        capacity: 10
+        period: 1h
+      requests:
+        capacity: 60
+        period: 1m
+  auth-rate-limit:
+    guest-token:
+      capacity: 10
+      period: 1h
   check:
     timeouts:
       connect: 2s
