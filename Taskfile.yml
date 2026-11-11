@@ -2,10 +2,10 @@ version: '3'
 
 tasks:
   start:
-    desc: Build the images if needed, start Postgres, back and front, and follow the logs (Ctrl+C stops the logs, not the services)
+    desc: Build the images if needed, start Postgres, back and front, and show their status (no logs; use logs or logs:<service>)
     cmds:
       - docker compose up --build -d
-      - docker compose logs -f
+      - docker compose ps
 
   start:*:
     desc: Build if needed and start one service (back, front or postgres) and follow its logs
@@ -16,11 +16,11 @@ tasks:
       - docker compose logs -f {{.SERVICE}}
 
   restart:
-    desc: Stop everything, rebuild the images if needed, start again and follow the logs
+    desc: Stop everything, rebuild the images if needed, start again and show their status (no logs)
     cmds:
       - docker compose down
       - docker compose up --build -d
-      - docker compose logs -f
+      - docker compose ps
 
   restart:*:
     desc: Rebuild if needed and recreate one service (back, front or postgres) without touching the others, then follow its logs
