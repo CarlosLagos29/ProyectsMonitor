@@ -18,7 +18,8 @@ private const val PROBLEM = "application/problem+json"
     summary = "List monitors",
     description = "Admin: all of their monitors. Guest: their own monitor, if any, plus the admin's public ones " +
         "(owned: false, read-only). Each one comes with its current status and the uptime of the last 24 hours. " +
-        "Own monitors first, then by name.",
+        "Own monitors first, then newest first. Paginated with page (zero-based, default 0) and size (1 to 50, " +
+        "default 10).",
 )
 @ApiResponse(
     responseCode = "200",
@@ -30,6 +31,11 @@ private const val PROBLEM = "application/problem+json"
             examples = [ExampleObject(name = "Guest", value = LIST_EXAMPLE)],
         ),
     ],
+)
+@ApiResponse(
+    responseCode = "400",
+    description = "page or size out of range (reason VALIDATION_ERROR, with errors per field).",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
     responseCode = "401",
@@ -234,7 +240,8 @@ private const val MONITOR_EXAMPLE = """
  "createdAt": "2026-11-10T13:00:00Z", "updatedAt": "2026-11-10T13:00:00Z"}
 """
 
-private const val LIST_EXAMPLE = "{\"monitors\": [$MONITOR_EXAMPLE]}"
+private const val LIST_EXAMPLE =
+    "{\"monitors\": [$MONITOR_EXAMPLE], \"page\": {\"number\": 0, \"size\": 10, \"totalElements\": 1, \"totalPages\": 1}}"
 
 private const val CREATED_EXAMPLE = """
 {"id": "0d2e4f61-7a8b-4c9d-8e1f-2a3b4c5d6e7f", "name": "My site", "url": "https://example.com/",

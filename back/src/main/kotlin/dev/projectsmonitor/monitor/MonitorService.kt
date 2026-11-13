@@ -6,6 +6,7 @@ import dev.projectsmonitor.config.AppProperties
 import dev.projectsmonitor.error.ApiErrorReason
 import dev.projectsmonitor.error.ApiException
 import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
+import dev.projectsmonitor.monitor.dto.MonitorListQuery
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.mapper.MonitorMapper
 import dev.projectsmonitor.ratelimit.KeyedRateLimiter
@@ -13,6 +14,8 @@ import dev.projectsmonitor.ratelimit.RateLimit
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -48,15 +51,14 @@ class MonitorService(
     private val guestManualChecks = KeyedRateLimiter("guest-manual-checks", limits.guest.manualChecks)
 
     @Transactional(readOnly = true)
-    fun list(user: CurrentUser): List<MonitorView> {
+    fun list(user: CurrentUser, query: MonitorListQuery): Page<MonitorView> {
         val now = now()
+        val pageable = PageRequest.of(query.page, query.size)
         val monitors = user.guestId
-            ?.let { monitorRepository.findVisibleToGuest(it, now) }
-            ?: monitorRepository.findAllByOwnerIdIsNullOrderByNameAsc()
-        val uptimes = uptimesOf(monitors.map { it.id }, now)
-        return monitors
-            .map { MonitorView(it, it.isOwnedBy(user, now), uptimes[it.id] ?: Uptime(0, 0)) }
-            .sortedWith(compareByDescending<MonitorView> { it.owned }.thenBy { it.monitor.name.lowercase() })
+            ?.let { monitorRepository.findVisibleToGuest(it, now, pageable) }
+            ?: monitorRepository.findAdminMonitors(pageable)
+        val uptimes = uptimesOf(monitors.content.map { it.id }, now)
+        return monitors.map { MonitorView(it, it.isOwnedBy(user, now), uptimes[it.id] ?: Uptime(0, 0)) }
     }
 
     @Transactional(readOnly = true)

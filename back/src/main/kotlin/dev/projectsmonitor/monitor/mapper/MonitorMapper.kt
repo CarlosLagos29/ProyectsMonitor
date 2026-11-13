@@ -9,9 +9,11 @@ import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
 import dev.projectsmonitor.monitor.dto.LastCheckResponse
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
+import dev.projectsmonitor.monitor.dto.PageResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.dto.UptimeResponse
 import okhttp3.HttpUrl
+import org.springframework.data.domain.Page
 import java.time.Instant
 
 object MonitorMapper {
@@ -62,7 +64,15 @@ object MonitorMapper {
         )
     }
 
-    fun toListResponse(views: List<MonitorView>) = MonitorListResponse(views.map { toResponse(it) })
+    fun toListResponse(page: Page<MonitorView>) = MonitorListResponse(
+        monitors = page.content.map { toResponse(it) },
+        page = PageResponse(
+            number = page.number,
+            size = page.size,
+            totalElements = page.totalElements,
+            totalPages = page.totalPages,
+        ),
+    )
 
     private fun toLastCheck(monitor: Monitor): LastCheckResponse? {
         val checkedAt = monitor.lastCheckedAt ?: return null

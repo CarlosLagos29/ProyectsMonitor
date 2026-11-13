@@ -3,6 +3,7 @@ package dev.projectsmonitor.monitor
 import dev.projectsmonitor.auth.CurrentUser
 import dev.projectsmonitor.monitor.dto.CheckResultResponse
 import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
+import dev.projectsmonitor.monitor.dto.MonitorListQuery
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -38,9 +40,9 @@ class MonitorController(private val monitorService: MonitorService) {
 
     @GetMapping
     @ListMonitorsDocs
-    fun list(user: CurrentUser): MonitorListResponse {
-        LOG.info("List monitors: user={}", user.id)
-        return MonitorMapper.toListResponse(monitorService.list(user))
+    fun list(@Valid @ParameterObject query: MonitorListQuery, user: CurrentUser): MonitorListResponse {
+        LOG.info("List monitors: user={} page={} size={}", user.id, query.page, query.size)
+        return MonitorMapper.toListResponse(monitorService.list(user, query))
     }
 
     @GetMapping("/{id}")

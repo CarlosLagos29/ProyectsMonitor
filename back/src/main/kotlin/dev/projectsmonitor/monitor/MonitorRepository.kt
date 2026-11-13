@@ -1,5 +1,7 @@
 package dev.projectsmonitor.monitor
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.NativeQuery
@@ -9,16 +11,24 @@ import java.util.UUID
 
 interface MonitorRepository : JpaRepository<Monitor, UUID> {
 
-    fun findAllByOwnerIdIsNullOrderByNameAsc(): List<Monitor>
+    @Query(
+        value = "select m from Monitor m where m.ownerId is null order by m.createdAt desc, m.id",
+        countQuery = "select count(m) from Monitor m where m.ownerId is null",
+    )
+    fun findAdminMonitors(pageable: Pageable): Page<Monitor>
 
     @Query(
-        """
+        value = """
         select m from Monitor m
         where (m.ownerId = :guestId and m.expiresAt > :now) or (m.ownerId is null and m.isPublic = true)
-        order by m.name
+        order by case when m.ownerId = :guestId then 0 else 1 end, m.createdAt desc, m.id
+        """,
+        countQuery = """
+        select count(m) from Monitor m
+        where (m.ownerId = :guestId and m.expiresAt > :now) or (m.ownerId is null and m.isPublic = true)
         """,
     )
-    fun findVisibleToGuest(guestId: UUID, now: Instant): List<Monitor>
+    fun findVisibleToGuest(guestId: UUID, now: Instant, pageable: Pageable): Page<Monitor>
 
     fun findByOwnerId(ownerId: UUID): Monitor?
 
