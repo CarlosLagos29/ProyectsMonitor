@@ -1,17 +1,12 @@
 import { defineStore } from 'pinia'
 
 import { getMe, login as requestLogin, startGuest as requestGuest } from '@/api/auth'
-import type { Limits, Session, User } from '@/api/api.types'
+import type { Session } from '@/api/api.types'
+
+import { useMonitorsStore } from './monitors'
+import type { ExitReason, SessionState, StoredSession } from './stores.types'
 
 const STORAGE_KEY = 'session'
-
-export type ExitReason = 'expiredGuest' | 'expiredAdmin'
-
-interface StoredSession {
-  token: string
-  expiresAt: string
-  user: User
-}
 
 function readStoredSession(): Session | null {
   try {
@@ -51,14 +46,14 @@ function writeStoredSession(session: Session | null) {
 let expiryTimer: ReturnType<typeof setTimeout> | undefined
 
 export const useSessionStore = defineStore('session', {
-  state: () => {
+  state: (): SessionState => {
     const stored = readStoredSession()
     return {
       token: stored?.token ?? null,
       user: stored?.user ?? null,
       expiresAt: stored?.expiresAt ?? null,
-      limits: null as Limits | null,
-      exitReason: null as ExitReason | null,
+      limits: null,
+      exitReason: null,
     }
   },
 
@@ -116,6 +111,7 @@ export const useSessionStore = defineStore('session', {
       this.expiresAt = null
       this.limits = null
       writeStoredSession(null)
+      useMonitorsStore().$reset()
     },
 
     scheduleExpiry() {
