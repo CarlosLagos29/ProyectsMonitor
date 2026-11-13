@@ -2,24 +2,26 @@ version: '3'
 
 tasks:
   start:
-    desc: Build the images if needed, start Postgres, back and front, and show their status (no logs; use logs or logs:<service>)
+    desc: Build the images if needed, start Postgres, back and front (front in dev mode with hot reload), and show their status (no logs; use logs or logs:<service>)
     cmds:
-      - docker compose up --build -d
+      - docker compose --profile prod rm --stop --force front-prod
+      - docker compose up --build -d --renew-anon-volumes
       - docker compose ps
 
   start:*:
-    desc: Build if needed and start one service (back, front or postgres) and follow its logs
+    desc: Build if needed and start one service (back, front or postgres) and follow its logs. The front runs in dev mode with hot reload
     vars:
       SERVICE: '{{index .MATCH 0}}'
     cmds:
-      - docker compose up --build -d {{.SERVICE}}
+      - docker compose --profile prod rm --stop --force front-prod
+      - docker compose up --build -d --renew-anon-volumes {{.SERVICE}}
       - docker compose logs -f {{.SERVICE}}
 
   restart:
     desc: Stop everything, rebuild the images if needed, start again and show their status (no logs)
     cmds:
-      - docker compose down
-      - docker compose up --build -d
+      - docker compose --profile prod down
+      - docker compose up --build -d --renew-anon-volumes
       - docker compose ps
 
   restart:*:
@@ -27,7 +29,7 @@ tasks:
     vars:
       SERVICE: '{{index .MATCH 0}}'
     cmds:
-      - docker compose up --build -d --force-recreate --no-deps {{.SERVICE}}
+      - docker compose up --build -d --force-recreate --renew-anon-volumes --no-deps {{.SERVICE}}
       - docker compose logs -f {{.SERVICE}}
 
   logs:
@@ -45,7 +47,7 @@ tasks:
   stop:
     desc: Stop and remove the containers (keeps the images and the database volume)
     cmds:
-      - docker compose down
+      - docker compose --profile prod down
 
   stop:*:
     desc: Stop and remove one service (back, front or postgres), keeping its image and the database volume
@@ -57,7 +59,14 @@ tasks:
   delete:
     desc: Remove everything this project created in Docker (containers, network, database volume and built images)
     cmds:
-      - docker compose down --rmi local --volumes --remove-orphans
+      - docker compose --profile prod down --rmi local --volumes --remove-orphans
+
+  build:front:
+    desc: Build the production front (Vite build served by nginx, like the deploy) and serve it on port 3000 instead of the dev server, then follow its logs
+    cmds:
+      - docker compose rm --stop --force front
+      - docker compose --profile prod up --build -d front-prod
+      - docker compose logs -f front-prod
 
   lint:
     desc: Run the linters of back and front

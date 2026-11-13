@@ -20,6 +20,7 @@ services:
     env_file:
       - path: ./back/.env
         required: false
+        format: raw
     environment:
       SPRING_PROFILES_ACTIVE: docker
       PORT: 8080
@@ -45,6 +46,18 @@ services:
   front:
     build:
       context: ./front
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+
+  front-prod:
+    profiles: ["prod"]
+    build:
+      context: ./front
+      target: prod
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
     ports:

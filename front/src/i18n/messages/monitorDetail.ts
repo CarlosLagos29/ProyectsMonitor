@@ -1,10 +1,7 @@
-import { defineMessages } from './define'
+export const monitorDetailEn = {
+  title: 'Monitor detail',
+}
 
-export default defineMessages({
-  en: {
-    title: 'Monitor detail',
-  },
-  es: {
-    title: 'Detalle del monitor',
-  },
-})
+export const monitorDetailEs = {
+  title: 'Detalle del monitor',
+}

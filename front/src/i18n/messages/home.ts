@@ -1,10 +1,11 @@
-import { defineMessages } from './define'
+export const homeEn = {
+  title: 'Monitors',
+  helloAdmin: 'Signed in as admin.',
+  helloGuest: 'You are browsing as a guest.',
+}
 
-export default defineMessages({
-  en: {
-    title: 'Monitors',
-  },
-  es: {
-    title: 'Monitores',
-  },
-})
+export const homeEs = {
+  title: 'Monitores',
+  helloAdmin: 'Ingresaste como admin.',
+  helloGuest: 'Estás navegando como invitado.',
+}

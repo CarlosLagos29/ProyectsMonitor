@@ -1,16 +1,13 @@
-import { defineMessages } from './define'
+export const statusEn = {
+  UP: 'Up',
+  DOWN: 'Down',
+  BLOCKED: 'Blocked',
+  REJECTED: 'Rejected',
+}
 
-export default defineMessages({
-  en: {
-    UP: 'Up',
-    DOWN: 'Down',
-    BLOCKED: 'Blocked',
-    REJECTED: 'Rejected',
-  },
-  es: {
-    UP: 'Activo',
-    DOWN: 'Caído',
-    BLOCKED: 'Bloqueado',
-    REJECTED: 'Rechazado',
-  },
-})
+export const statusEs = {
+  UP: 'Activo',
+  DOWN: 'Caído',
+  BLOCKED: 'Bloqueado',
+  REJECTED: 'Rechazado',
+}
