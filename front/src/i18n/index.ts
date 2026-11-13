@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
 
-import { messages, type MessageSchema } from './messages'
+import { en } from './en'
+import { es } from './es'
 
 export type AppLocale = 'en' | 'es'
 
@@ -28,11 +29,11 @@ function detectLocale(): AppLocale {
 
 const initialLocale = readStoredLocale() ?? detectLocale()
 
-export const i18n = createI18n<[MessageSchema], AppLocale, false>({
+export const i18n = createI18n({
   legacy: false,
   locale: initialLocale,
   fallbackLocale: FALLBACK_LOCALE,
-  messages,
+  messages: { en, es },
 })
 
 document.documentElement.lang = initialLocale
