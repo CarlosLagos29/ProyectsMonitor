@@ -15,8 +15,21 @@ export interface MonitorDto {
   updatedAt: string
 }
 
+export interface PageDto {
+  number: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface MonitorListQueryDto {
+  page?: number
+  size?: number
+}
+
 export interface MonitorListResponseDto {
   monitors: MonitorDto[]
+  page: PageDto
 }
 
 export interface CreateMonitorRequestDto {

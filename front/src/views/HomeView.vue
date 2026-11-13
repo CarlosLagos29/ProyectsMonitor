@@ -48,12 +48,37 @@
       <p v-if="loading" class="text-sm">{{ $t('common.loading') }}</p>
       <div v-else-if="error" role="alert" class="space-y-2 text-sm text-red-600">
         <p>{{ $t(error.key, error.params) }}</p>
-        <button type="button" class="rounded border px-2 py-1 text-black" @click="fetchAll">
+        <button type="button" class="rounded border px-2 py-1 text-black" @click="fetchPage()">
           {{ $t('common.retry') }}
         </button>
       </div>
       <p v-else-if="!items.length" class="text-sm text-gray-600">Todavía no hay monitores.</p>
-      <MonitorList v-else :monitors="items" @edit="openEdit" @delete="openDelete" />
+      <template v-else>
+        <MonitorList :monitors="items" @edit="openEdit" @delete="openDelete" />
+        <nav
+          v-if="totalPages > 1"
+          aria-label="Páginas de monitores"
+          class="flex items-center justify-center gap-3 text-sm"
+        >
+          <button
+            type="button"
+            class="rounded border px-3 py-1 disabled:opacity-50"
+            :disabled="fetching || currentPage === 0"
+            @click="fetchPage(currentPage - 1)"
+          >
+            Anterior
+          </button>
+          <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+          <button
+            type="button"
+            class="rounded border px-3 py-1 disabled:opacity-50"
+            :disabled="fetching || currentPage >= totalPages - 1"
+            @click="fetchPage(currentPage + 1)"
+          >
+            Siguiente
+          </button>
+        </nav>
+      </template>
     </template>
 
     <MonitorFormDialog
@@ -103,7 +128,15 @@ export default {
   },
   computed: {
     ...mapState(useSessionStore, ['isAdmin', 'isGuest', 'limits']),
-    ...mapState(useMonitorsStore, ['items', 'loading', 'error', 'canCreate']),
+    ...mapState(useMonitorsStore, [
+      'items',
+      'loading',
+      'fetching',
+      'error',
+      'canCreate',
+      'currentPage',
+      'totalPages',
+    ]),
     tabs(): { id: HomeTab; label: string }[] {
       return [
         { id: 'mine', label: 'Mis monitores' },
@@ -115,7 +148,7 @@ export default {
     },
   },
   mounted() {
-    void this.fetchAll()
+    void this.fetchPage()
     const seconds = this.limits?.checkIntervalSeconds ?? DEFAULT_POLL_SECONDS
     this.pollTimer = setInterval(() => this.poll(), seconds * 1_000)
     document.addEventListener('visibilitychange', this.onVisibilityChange)
@@ -126,15 +159,15 @@ export default {
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
   },
   methods: {
-    ...mapActions(useMonitorsStore, ['fetchAll']),
+    ...mapActions(useMonitorsStore, ['fetchPage']),
     poll() {
       if (!document.hidden) {
-        void this.fetchAll()
+        void this.fetchPage()
       }
     },
     onVisibilityChange() {
       if (!document.hidden) {
-        void this.fetchAll()
+        void this.fetchPage()
       }
     },
     openCreate() {
@@ -154,7 +187,7 @@ export default {
       this.formOpen = false
       if (created) {
         clearTimeout(this.firstCheckTimer)
-        this.firstCheckTimer = setTimeout(() => void this.fetchAll(), FIRST_CHECK_DELAY_MS)
+        this.firstCheckTimer = setTimeout(() => void this.fetchPage(), FIRST_CHECK_DELAY_MS)
       }
     },
   },

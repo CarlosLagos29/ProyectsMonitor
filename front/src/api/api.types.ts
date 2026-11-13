@@ -55,6 +55,23 @@ export interface MonitorDraft {
   isPublic: boolean
 }
 
+export interface PageInfo {
+  number: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface MonitorPage {
+  monitors: Monitor[]
+  page: PageInfo
+}
+
+export interface MonitorListParams {
+  page?: number
+  size?: number
+}
+
 export interface MonitorChanges {
   name?: string
   isPublic?: boolean

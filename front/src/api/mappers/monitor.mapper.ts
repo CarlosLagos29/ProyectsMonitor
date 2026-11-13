@@ -1,9 +1,17 @@
 import type {
   CreateMonitorRequestDto,
   MonitorDto,
+  MonitorListQueryDto,
+  MonitorListResponseDto,
   UpdateMonitorRequestDto,
 } from '../dto/monitor.dto'
-import type { Monitor, MonitorChanges, MonitorDraft } from '../api.types'
+import type {
+  Monitor,
+  MonitorChanges,
+  MonitorDraft,
+  MonitorListParams,
+  MonitorPage,
+} from '../api.types'
 import { toLastCheck } from './check.mapper'
 
 export function toMonitor(dto: MonitorDto): Monitor {
@@ -21,6 +29,29 @@ export function toMonitor(dto: MonitorDto): Monitor {
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
   }
+}
+
+export function toMonitorPage(dto: MonitorListResponseDto): MonitorPage {
+  return {
+    monitors: dto.monitors.map(toMonitor),
+    page: {
+      number: dto.page.number,
+      size: dto.page.size,
+      totalElements: dto.page.totalElements,
+      totalPages: dto.page.totalPages,
+    },
+  }
+}
+
+export function toMonitorListQuery(params: MonitorListParams): MonitorListQueryDto {
+  const query: MonitorListQueryDto = {}
+  if (params.page !== undefined) {
+    query.page = params.page
+  }
+  if (params.size !== undefined) {
+    query.size = params.size
+  }
+  return query
 }
 
 export function toCreateMonitorRequest(

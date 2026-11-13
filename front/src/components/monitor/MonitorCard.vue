@@ -160,12 +160,12 @@ export default {
     clearInterval(this.ticker)
   },
   methods: {
-    ...mapActions(useMonitorsStore, ['checkNow', 'update', 'fetchAll']),
+    ...mapActions(useMonitorsStore, ['checkNow', 'update', 'fetchPage']),
     tick() {
       this.now = Date.now()
       if (this.monitor.expiresAt && this.monitor.expiresAt.getTime() <= this.now) {
         clearInterval(this.ticker)
-        void this.fetchAll()
+        void this.fetchPage()
       }
     },
     async runCheck() {

@@ -14,38 +14,64 @@ import {
 import { useSessionStore } from './session'
 import type { MonitorsState } from './stores.types'
 
+export const PAGE_SIZE = 10
+
+let lastRequest = 0
+
 export const useMonitorsStore = defineStore('monitors', {
   state: (): MonitorsState => ({
     items: [],
+    page: null,
+    ownedCount: 0,
     loading: false,
+    fetching: false,
     loaded: false,
     error: null,
   }),
 
   getters: {
-    owned: (state) => state.items.filter((monitor) => monitor.owned),
-    others: (state) => state.items.filter((monitor) => !monitor.owned),
+    currentPage: (state) => state.page?.number ?? 0,
+    totalPages: (state) => state.page?.totalPages ?? 0,
     canSetPublic: () => useSessionStore().limits?.canSetPublic ?? false,
     canCreate(): boolean {
       const limits = useSessionStore().limits
       if (!limits) {
         return false
       }
-      return limits.maxMonitors === null || this.owned.length < limits.maxMonitors
+      return limits.maxMonitors === null || this.ownedCount < limits.maxMonitors
     },
   },
 
   actions: {
-    async fetchAll() {
+    async fetchPage(page?: number) {
+      const request = ++lastRequest
       this.loading = !this.loaded
+      this.fetching = true
       try {
-        this.items = await listMonitors()
+        const result = await listMonitors({ page: page ?? this.currentPage, size: PAGE_SIZE })
+        if (request !== lastRequest) {
+          return
+        }
+        if (!result.monitors.length && result.page.number > 0) {
+          await this.fetchPage(Math.max(result.page.totalPages - 1, 0))
+          return
+        }
+        this.items = result.monitors
+        this.page = result.page
+        if (result.page.number === 0) {
+          this.ownedCount = result.monitors.filter((monitor) => monitor.owned).length
+        }
         this.loaded = true
         this.error = null
       } catch (error) {
-        this.error = describeError(error)
+        if (request === lastRequest) {
+          this.error = describeError(error)
+        }
       } finally {
-        this.loading = false
+        if (request === lastRequest) {
+          this.loading = false
+          this.fetching = false
+        }
       }
     },
 
@@ -57,7 +83,7 @@ export const useMonitorsStore = defineStore('monitors', {
 
     async create(draft: MonitorDraft): Promise<Monitor> {
       const monitor = await createMonitor(draft, this.canSetPublic)
-      this.items = [monitor, ...this.items]
+      await this.fetchPage(0)
       return monitor
     },
 
@@ -69,7 +95,7 @@ export const useMonitorsStore = defineStore('monitors', {
 
     async remove(id: string) {
       await deleteMonitor(id)
-      this.items = this.items.filter((monitor) => monitor.id !== id)
+      await this.fetchPage(0)
     },
 
     async checkNow(id: string) {

@@ -47,7 +47,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         status: HttpStatusCode,
         request: WebRequest,
     ): ResponseEntity<Any>? {
-        val errors = ex.bindingResult.fieldErrors.associate { it.field to it.defaultMessage }
+        val errors = ex.bindingResult.fieldErrors.associate {
+            it.field to if (it.isBindingFailure) "has an invalid value" else it.defaultMessage
+        }
         LOG.warn("Invalid request: {}", errors)
         val body = ex.body.apply {
             setProperty("reason", ApiErrorReason.VALIDATION_ERROR)

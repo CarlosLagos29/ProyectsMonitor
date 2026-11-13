@@ -2,8 +2,21 @@ import type { CheckResultDto } from './dto/check.dto'
 import type { MonitorDto, MonitorListResponseDto } from './dto/monitor.dto'
 import { API_PREFIX, http } from './http'
 import { toCheckResult } from './mappers/check.mapper'
-import { toCreateMonitorRequest, toMonitor, toUpdateMonitorRequest } from './mappers/monitor.mapper'
-import type { CheckResult, Monitor, MonitorChanges, MonitorDraft } from './api.types'
+import {
+  toCreateMonitorRequest,
+  toMonitor,
+  toMonitorListQuery,
+  toMonitorPage,
+  toUpdateMonitorRequest,
+} from './mappers/monitor.mapper'
+import type {
+  CheckResult,
+  Monitor,
+  MonitorChanges,
+  MonitorDraft,
+  MonitorListParams,
+  MonitorPage,
+} from './api.types'
 
 const MONITORS_PATH = `${API_PREFIX}/monitors`
 
@@ -11,9 +24,11 @@ function monitorPath(id: string) {
   return `${MONITORS_PATH}/${encodeURIComponent(id)}`
 }
 
-export async function listMonitors(): Promise<Monitor[]> {
-  const { data } = await http.get<MonitorListResponseDto>(MONITORS_PATH)
-  return data.monitors.map(toMonitor)
+export async function listMonitors(params: MonitorListParams = {}): Promise<MonitorPage> {
+  const { data } = await http.get<MonitorListResponseDto>(MONITORS_PATH, {
+    params: toMonitorListQuery(params),
+  })
+  return toMonitorPage(data)
 }
 
 export async function getMonitor(id: string): Promise<Monitor> {
