@@ -11,6 +11,10 @@ data class UptimeCount(val monitorId: UUID, val checks: Long, val upChecks: Long
 
 data class StatusCount(val status: HealthStatus, val checks: Long)
 
+data class RecentCheck(val monitorId: UUID, val checkedAt: Instant, val status: HealthStatus, val latencyMs: Int)
+
+data class LatencyStats(val avgMs: Double?, val p95Ms: Int?)
+
 interface CheckResultRepository : JpaRepository<CheckResult, Long> {
 
     fun findFirstByMonitorIdOrderByCheckedAtDesc(monitorId: UUID): CheckResult?
@@ -40,6 +44,21 @@ interface CheckResultRepository : JpaRepository<CheckResult, Long> {
 
     @Query(
         """
+        select new dev.projectsmonitor.monitor.RecentCheck(t.monitorId, t.checkedAt, t.status, t.latencyMs)
+        from (
+            select r.monitor.id as monitorId, r.checkedAt as checkedAt, r.status as status, r.latencyMs as latencyMs,
+                row_number() over (partition by r.monitor.id order by r.checkedAt desc) as position
+            from CheckResult r
+            where r.monitor.id in :monitorIds and r.checkedAt >= :from
+        ) t
+        where t.position <= :perMonitor
+        order by t.checkedAt
+        """,
+    )
+    fun findRecent(monitorIds: Collection<UUID>, from: Instant, perMonitor: Int): List<RecentCheck>
+
+    @Query(
+        """
         select new dev.projectsmonitor.monitor.StatusCount(r.status, count(r))
         from CheckResult r
         where r.monitor.id = :monitorId and r.checkedAt >= :from
@@ -47,6 +66,19 @@ interface CheckResultRepository : JpaRepository<CheckResult, Long> {
         """,
     )
     fun countByStatus(monitorId: UUID, from: Instant): List<StatusCount>
+
+    @Query(
+        """
+        select new dev.projectsmonitor.monitor.LatencyStats(
+            avg(r.latencyMs),
+            percentile_disc(0.95) within group (order by r.latencyMs)
+        )
+        from CheckResult r
+        where r.monitor.id = :monitorId and r.checkedAt >= :from
+            and r.status = dev.projectsmonitor.common.enums.HealthStatus.UP
+        """,
+    )
+    fun findUpLatency(monitorId: UUID, from: Instant): LatencyStats
 
     @Modifying
     @Query("delete from CheckResult r where r.checkedAt < :before")

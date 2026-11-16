@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-import type { Monitor, MonitorChanges, MonitorDraft } from '@/api/api.types'
+import type { Monitor, MonitorChanges, MonitorDraft, MonitorScope } from '@/api/api.types'
 import { describeError } from '@/api/errors'
 import {
   checkMonitor,
@@ -15,12 +15,14 @@ import { useSessionStore } from './session'
 import type { MonitorsState } from './stores.types'
 
 export const PAGE_SIZE = 10
+export const RECENT_CHECKS_MAX = 24
 
 let lastRequest = 0
 
 export const useMonitorsStore = defineStore('monitors', {
   state: (): MonitorsState => ({
     items: [],
+    scope: null,
     page: null,
     ownedCount: 0,
     loading: false,
@@ -30,6 +32,8 @@ export const useMonitorsStore = defineStore('monitors', {
   }),
 
   getters: {
+    activeScope: (state): MonitorScope =>
+      state.scope ?? (useSessionStore().isGuest ? 'PUBLIC' : 'OWN'),
     currentPage: (state) => state.page?.number ?? 0,
     totalPages: (state) => state.page?.totalPages ?? 0,
     canSetPublic: () => useSessionStore().limits?.canSetPublic ?? false,
@@ -48,7 +52,11 @@ export const useMonitorsStore = defineStore('monitors', {
       this.loading = !this.loaded
       this.fetching = true
       try {
-        const result = await listMonitors({ page: page ?? this.currentPage, size: PAGE_SIZE })
+        const result = await listMonitors({
+          page: page ?? this.currentPage,
+          size: PAGE_SIZE,
+          scope: this.activeScope,
+        })
         if (request !== lastRequest) {
           return
         }
@@ -58,8 +66,8 @@ export const useMonitorsStore = defineStore('monitors', {
         }
         this.items = result.monitors
         this.page = result.page
-        if (result.page.number === 0) {
-          this.ownedCount = result.monitors.filter((monitor) => monitor.owned).length
+        if (this.activeScope === 'OWN') {
+          this.ownedCount = result.page.totalElements
         }
         this.loaded = true
         this.error = null
@@ -73,6 +81,17 @@ export const useMonitorsStore = defineStore('monitors', {
           this.fetching = false
         }
       }
+    },
+
+    async setScope(scope: MonitorScope) {
+      if (scope === this.activeScope) {
+        return
+      }
+      this.scope = scope
+      this.items = []
+      this.page = null
+      this.loaded = false
+      await this.fetchPage(0)
     },
 
     async fetchOne(id: string): Promise<Monitor> {
@@ -108,6 +127,13 @@ export const useMonitorsStore = defineStore('monitors', {
           reason: result.reason,
           httpStatus: result.httpStatus,
           latencyMs: result.latencyMs,
+        }
+        const latest = monitor.recentChecks.at(-1)
+        if (!latest || result.checkedAt.getTime() > latest.checkedAt.getTime()) {
+          monitor.recentChecks = [
+            ...monitor.recentChecks,
+            { checkedAt: result.checkedAt, status: result.status, latencyMs: result.latencyMs },
+          ].slice(-RECENT_CHECKS_MAX)
         }
       }
       return result

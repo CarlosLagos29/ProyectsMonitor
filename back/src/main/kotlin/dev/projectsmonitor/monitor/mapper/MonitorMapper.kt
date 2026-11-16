@@ -10,6 +10,7 @@ import dev.projectsmonitor.monitor.dto.LastCheckResponse
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
 import dev.projectsmonitor.monitor.dto.PageResponse
+import dev.projectsmonitor.monitor.dto.RecentCheckResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.dto.UptimeResponse
 import okhttp3.HttpUrl
@@ -59,6 +60,9 @@ object MonitorMapper {
             nextCheckAt = nextCheckAt,
             lastCheck = toLastCheck(this),
             uptime = toUptime(view.uptime),
+            recentChecks = view.recentChecks.map {
+                RecentCheckResponse(checkedAt = it.checkedAt, status = it.status, latencyMs = it.latencyMs)
+            },
             createdAt = createdAt,
             updatedAt = updatedAt,
         )
@@ -88,5 +92,5 @@ object MonitorMapper {
         )
     }
 
-    private fun toUptime(uptime: Uptime) = UptimeResponse(percentage = uptime.percentage, checks = uptime.checks)
+    fun toUptime(uptime: Uptime) = UptimeResponse(percentage = uptime.percentage, checks = uptime.checks)
 }

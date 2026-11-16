@@ -28,16 +28,21 @@
       <p>{{ uptimeText }}</p>
     </div>
 
+    <MonitorSparkline :checks="monitor.recentChecks" />
+
     <ul class="flex flex-wrap gap-2 text-xs">
       <li v-if="!monitor.enabled" class="rounded bg-gray-200 px-2 py-0.5">Pausado</li>
       <li v-if="canSetPublic && monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">
         {{ monitor.isPublic ? 'Público' : 'Privado' }}
       </li>
-      <li v-if="!monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">Solo lectura</li>
+      <li v-if="isAdmin && !monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">
+        De un invitado
+      </li>
+      <li v-if="!canManage" class="rounded bg-gray-100 px-2 py-0.5">Solo lectura</li>
       <li v-if="expiresText" class="rounded bg-amber-100 px-2 py-0.5">{{ expiresText }}</li>
     </ul>
 
-    <div v-if="monitor.owned" class="flex flex-wrap gap-2">
+    <div v-if="canManage" class="flex flex-wrap gap-2">
       <button
         type="button"
         class="rounded border px-2 py-1 text-sm"
@@ -86,13 +91,14 @@ import { useSessionStore } from '@/stores/session'
 import { formatElapsed, formatRemaining } from '@/utils/time'
 
 import type { MonitorCardData } from '../components.types'
+import MonitorSparkline from './MonitorSparkline.vue'
 import StatusBadge from './StatusBadge.vue'
 
 const TICK_MS = 1_000
 
 export default {
   name: 'MonitorCard',
-  components: { StatusBadge },
+  components: { MonitorSparkline, StatusBadge },
   props: {
     monitor: {
       type: Object as PropType<Monitor>,
@@ -111,8 +117,11 @@ export default {
     }
   },
   computed: {
-    ...mapState(useSessionStore, ['limits']),
+    ...mapState(useSessionStore, ['limits', 'isAdmin']),
     ...mapState(useMonitorsStore, ['canSetPublic']),
+    canManage(): boolean {
+      return this.isAdmin || this.monitor.owned
+    },
     lastCheckedText(): string {
       return this.monitor.lastCheck ? formatElapsed(this.monitor.lastCheck.checkedAt, this.now) : ''
     },
@@ -135,7 +144,7 @@ export default {
       return `Uptime 24 h: ${percentage}% (basado en ${checks} ${checks === 1 ? 'chequeo' : 'chequeos'})`
     },
     expiresText(): string {
-      if (!this.monitor.owned || !this.monitor.expiresAt) {
+      if (!this.monitor.expiresAt) {
         return ''
       }
       return `Se borra en ${formatRemaining(this.monitor.expiresAt.getTime() - this.now)}`

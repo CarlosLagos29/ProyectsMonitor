@@ -12,7 +12,7 @@ import type {
   MonitorListParams,
   MonitorPage,
 } from '../api.types'
-import { toLastCheck } from './check.mapper'
+import { toLastCheck, toRecentCheck } from './check.mapper'
 
 export function toMonitor(dto: MonitorDto): Monitor {
   return {
@@ -26,6 +26,7 @@ export function toMonitor(dto: MonitorDto): Monitor {
     nextCheckAt: new Date(dto.nextCheckAt),
     lastCheck: dto.lastCheck ? toLastCheck(dto.lastCheck) : null,
     uptime: dto.uptime,
+    recentChecks: dto.recentChecks.map(toRecentCheck),
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
   }
@@ -50,6 +51,9 @@ export function toMonitorListQuery(params: MonitorListParams): MonitorListQueryD
   }
   if (params.size !== undefined) {
     query.size = params.size
+  }
+  if (params.scope !== undefined) {
+    query.scope = params.scope
   }
   return query
 }

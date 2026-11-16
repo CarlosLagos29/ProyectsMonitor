@@ -23,6 +23,12 @@ export interface LastCheckDto {
   latencyMs: number
 }
 
+export interface RecentCheckDto {
+  checkedAt: string
+  status: HealthStatusDto
+  latencyMs: number
+}
+
 export interface CheckResultDto extends LastCheckDto {
   finalUrl: string
   redirects: number

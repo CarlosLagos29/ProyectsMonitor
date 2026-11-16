@@ -37,7 +37,7 @@
         Activo (si lo desactivás, no se chequea solo)
       </label>
 
-      <label v-if="canSetPublic" class="flex items-center gap-2 text-sm">
+      <label v-if="showPublic" class="flex items-center gap-2 text-sm">
         <input v-model="isPublic" type="checkbox" />
         Público (lo ven los invitados)
       </label>
@@ -98,6 +98,9 @@ export default {
     isEdit(): boolean {
       return this.monitor !== null
     },
+    showPublic(): boolean {
+      return this.canSetPublic && !this.monitor?.expiresAt
+    },
     nameError(): string {
       if (this.fieldErrors.name) {
         return 'Revisá el nombre: tiene que tener entre 1 y 60 caracteres.'
@@ -154,7 +157,7 @@ export default {
       if (this.enabled !== monitor.enabled) {
         changes.enabled = this.enabled
       }
-      if (this.canSetPublic && this.isPublic !== monitor.isPublic) {
+      if (this.showPublic && this.isPublic !== monitor.isPublic) {
         changes.isPublic = this.isPublic
       }
       return changes

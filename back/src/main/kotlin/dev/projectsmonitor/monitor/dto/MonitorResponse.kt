@@ -1,5 +1,6 @@
 package dev.projectsmonitor.monitor.dto
 
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.util.UUID
@@ -34,7 +35,8 @@ data class MonitorResponse(
 
     @Schema(
         requiredMode = Schema.RequiredMode.REQUIRED,
-        description = "true if it belongs to the current user. false = someone else's public monitor, read-only",
+        description = "true if it belongs to the current user. false = a public monitor (read-only for a guest) or, " +
+            "for the admin, a guest monitor they can manage",
         example = "true",
     )
     val owned: Boolean,
@@ -59,6 +61,14 @@ data class MonitorResponse(
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Last 24 hours")
     val uptime: UptimeResponse,
+
+    @ArraySchema(
+        arraySchema = Schema(
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            description = "Last 24 checks of the last 24 hours, oldest first, for the sparkline. Empty without checks",
+        ),
+    )
+    val recentChecks: List<RecentCheckResponse>,
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2026-11-10T13:00:00Z")
     val createdAt: Instant,

@@ -15,10 +15,7 @@ export interface LoginData {
   guestTimer: ReturnType<typeof setInterval> | undefined
 }
 
-export type HomeTab = 'mine' | 'guests'
-
 export interface HomeData {
-  activeTab: HomeTab
   formOpen: boolean
   editing: Monitor | null
   deleteOpen: boolean

@@ -1,4 +1,4 @@
-import type { LastCheckDto, UptimeDto } from './check.dto'
+import type { LastCheckDto, RecentCheckDto, UptimeDto } from './check.dto'
 
 export interface MonitorDto {
   id: string
@@ -11,6 +11,7 @@ export interface MonitorDto {
   nextCheckAt: string
   lastCheck: LastCheckDto | null
   uptime: UptimeDto
+  recentChecks: RecentCheckDto[]
   createdAt: string
   updatedAt: string
 }
@@ -22,9 +23,12 @@ export interface PageDto {
   totalPages: number
 }
 
+export type MonitorScopeDto = 'OWN' | 'PUBLIC' | 'GUESTS'
+
 export interface MonitorListQueryDto {
   page?: number
   size?: number
+  scope?: MonitorScopeDto
 }
 
 export interface MonitorListResponseDto {

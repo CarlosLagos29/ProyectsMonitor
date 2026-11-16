@@ -1,5 +1,5 @@
 import type { ErrorMessage } from '@/api/errors'
-import type { Limits, Monitor, PageInfo, User } from '@/api/api.types'
+import type { Limits, Monitor, MonitorScope, PageInfo, User } from '@/api/api.types'
 
 export type ExitReason = 'expiredGuest' | 'expiredAdmin'
 
@@ -19,6 +19,7 @@ export interface StoredSession {
 
 export interface MonitorsState {
   items: Monitor[]
+  scope: MonitorScope | null
   page: PageInfo | null
   ownedCount: number
   loading: boolean

@@ -3,16 +3,17 @@
     <header class="flex flex-wrap items-center justify-between gap-2">
       <h1 class="text-xl font-semibold">{{ $t('home.title') }}</h1>
       <button
+        v-if="activeScope === 'OWN'"
         type="button"
         class="rounded border px-3 py-1"
-        :disabled="!canCreate"
+        :disabled="loading || !canCreate"
         @click="openCreate"
       >
         Agregar monitor
       </button>
     </header>
 
-    <p v-if="isGuest && limitReached" class="text-sm text-gray-600">
+    <p v-if="isGuest && activeScope === 'OWN' && limitReached" class="text-sm text-gray-600">
       Ya tenés tu monitor de prueba. Si querés probar con otra URL, borralo y creá uno nuevo.
     </p>
 
@@ -23,62 +24,58 @@
       </p>
     </InfoNotice>
 
-    <div v-if="isAdmin" role="tablist" class="flex gap-2 border-b">
+    <div role="tablist" class="flex gap-2 border-b">
       <button
         v-for="tab in tabs"
         :key="tab.id"
         type="button"
         role="tab"
         class="-mb-px border-b-2 px-3 py-1 text-sm"
-        :class="activeTab === tab.id ? 'border-black font-semibold' : 'border-transparent'"
-        :aria-selected="activeTab === tab.id"
-        @click="activeTab = tab.id"
+        :class="activeScope === tab.id ? 'border-black font-semibold' : 'border-transparent'"
+        :aria-selected="activeScope === tab.id"
+        @click="setScope(tab.id)"
       >
         {{ tab.label }}
       </button>
     </div>
 
-    <InfoNotice v-if="isAdmin && activeTab === 'guests'" title="Pendiente del back">
-      <p>
-        Todavía no se pueden ver los monitores de los invitados: el back tiene que exponerlos para
-        el admin.
-      </p>
-    </InfoNotice>
+    <p v-if="activeScope === 'GUESTS'" class="text-sm text-gray-600">
+      Monitores de invitados que no vencieron. Si pausás uno, el invitado lo puede reanudar: para
+      cortarlo del todo, borralo.
+    </p>
+    <p v-if="loading" class="text-sm">{{ $t('common.loading') }}</p>
+    <div v-else-if="error" role="alert" class="space-y-2 text-sm text-red-600">
+      <p>{{ $t(error.key, error.params) }}</p>
+      <button type="button" class="rounded border px-2 py-1 text-black" @click="fetchPage()">
+        {{ $t('common.retry') }}
+      </button>
+    </div>
+    <p v-else-if="!items.length" class="text-sm text-gray-600">{{ emptyText }}</p>
     <template v-else>
-      <p v-if="loading" class="text-sm">{{ $t('common.loading') }}</p>
-      <div v-else-if="error" role="alert" class="space-y-2 text-sm text-red-600">
-        <p>{{ $t(error.key, error.params) }}</p>
-        <button type="button" class="rounded border px-2 py-1 text-black" @click="fetchPage()">
-          {{ $t('common.retry') }}
-        </button>
-      </div>
-      <p v-else-if="!items.length" class="text-sm text-gray-600">Todavía no hay monitores.</p>
-      <template v-else>
-        <MonitorList :monitors="items" @edit="openEdit" @delete="openDelete" />
-        <nav
-          v-if="totalPages > 1"
-          aria-label="Páginas de monitores"
-          class="flex items-center justify-center gap-3 text-sm"
+      <MonitorList :monitors="items" @edit="openEdit" @delete="openDelete" />
+      <nav
+        v-if="totalPages > 1"
+        aria-label="Páginas de monitores"
+        class="flex items-center justify-center gap-3 text-sm"
+      >
+        <button
+          type="button"
+          class="rounded border px-3 py-1 disabled:opacity-50"
+          :disabled="fetching || currentPage === 0"
+          @click="fetchPage(currentPage - 1)"
         >
-          <button
-            type="button"
-            class="rounded border px-3 py-1 disabled:opacity-50"
-            :disabled="fetching || currentPage === 0"
-            @click="fetchPage(currentPage - 1)"
-          >
-            Anterior
-          </button>
-          <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-          <button
-            type="button"
-            class="rounded border px-3 py-1 disabled:opacity-50"
-            :disabled="fetching || currentPage >= totalPages - 1"
-            @click="fetchPage(currentPage + 1)"
-          >
-            Siguiente
-          </button>
-        </nav>
-      </template>
+          Anterior
+        </button>
+        <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+        <button
+          type="button"
+          class="rounded border px-3 py-1 disabled:opacity-50"
+          :disabled="fetching || currentPage >= totalPages - 1"
+          @click="fetchPage(currentPage + 1)"
+        >
+          Siguiente
+        </button>
+      </nav>
     </template>
 
     <MonitorFormDialog
@@ -99,7 +96,7 @@
 <script lang="ts">
 import { mapActions, mapState } from 'pinia'
 
-import type { Monitor } from '@/api/api.types'
+import type { Monitor, MonitorScope } from '@/api/api.types'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
 import DeleteMonitorDialog from '@/components/monitor/DeleteMonitorDialog.vue'
 import MonitorFormDialog from '@/components/monitor/MonitorFormDialog.vue'
@@ -107,7 +104,7 @@ import MonitorList from '@/components/monitor/MonitorList.vue'
 import { useMonitorsStore } from '@/stores/monitors'
 import { useSessionStore } from '@/stores/session'
 
-import type { HomeData, HomeTab } from './views.types'
+import type { HomeData } from './views.types'
 
 const DEFAULT_POLL_SECONDS = 600
 const FIRST_CHECK_DELAY_MS = 70_000
@@ -117,7 +114,6 @@ export default {
   components: { DeleteMonitorDialog, InfoNotice, MonitorFormDialog, MonitorList },
   data(): HomeData {
     return {
-      activeTab: 'mine',
       formOpen: false,
       editing: null,
       deleteOpen: false,
@@ -130,6 +126,7 @@ export default {
     ...mapState(useSessionStore, ['isAdmin', 'isGuest', 'limits']),
     ...mapState(useMonitorsStore, [
       'items',
+      'activeScope',
       'loading',
       'fetching',
       'error',
@@ -137,11 +134,28 @@ export default {
       'currentPage',
       'totalPages',
     ]),
-    tabs(): { id: HomeTab; label: string }[] {
+    tabs(): { id: MonitorScope; label: string }[] {
+      if (this.isGuest) {
+        return [
+          { id: 'PUBLIC', label: 'Públicos' },
+          { id: 'OWN', label: 'Mi monitor' },
+        ]
+      }
       return [
-        { id: 'mine', label: 'Mis monitores' },
-        { id: 'guests', label: 'Invitados' },
+        { id: 'OWN', label: 'Mis monitores' },
+        { id: 'GUESTS', label: 'Invitados' },
       ]
+    },
+    emptyText(): string {
+      if (this.activeScope === 'PUBLIC') {
+        return 'Todavía no hay monitores públicos.'
+      }
+      if (this.activeScope === 'GUESTS') {
+        return 'No hay monitores de invitados vigentes.'
+      }
+      return this.isGuest
+        ? 'Todavía no creaste tu monitor. Agregá una URL para probar cómo funciona.'
+        : 'Todavía no hay monitores.'
     },
     limitReached(): boolean {
       return this.limits !== null && this.limits.maxMonitors !== null && !this.canCreate
@@ -159,7 +173,7 @@ export default {
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
   },
   methods: {
-    ...mapActions(useMonitorsStore, ['fetchPage']),
+    ...mapActions(useMonitorsStore, ['fetchPage', 'setScope']),
     poll() {
       if (!document.hidden) {
         void this.fetchPage()
