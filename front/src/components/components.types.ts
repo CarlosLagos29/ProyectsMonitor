@@ -1,3 +1,4 @@
+import type { HealthStatus } from '@/api/api.types'
 import type { ErrorMessage } from '@/api/errors'
 
 export interface MonitorCardData {
@@ -23,4 +24,12 @@ export interface MonitorFormData {
 export interface DeleteMonitorData {
   deleting: boolean
   error: ErrorMessage | null
+}
+
+export interface SparkPoint {
+  key: number
+  x: number
+  y: number
+  status: HealthStatus
+  label: string
 }

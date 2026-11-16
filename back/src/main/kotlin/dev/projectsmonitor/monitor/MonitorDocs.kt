@@ -1,8 +1,10 @@
 package dev.projectsmonitor.monitor
 
 import dev.projectsmonitor.monitor.dto.CheckResultResponse
+import dev.projectsmonitor.monitor.dto.CheckResultsResponse
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
+import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -19,9 +21,10 @@ private const val PROBLEM = "application/problem+json"
     description = "One list per scope. OWN (default): the admin gets all of their monitors, public and private; " +
         "a guest gets only their own monitor, if they created it and it has not expired. PUBLIC: the admin's " +
         "public monitors (owned: true for the admin, false and read-only for a guest). GUESTS, admin only: the " +
-        "active guest monitors (owned: false), which the admin can manage. Each one comes with its current status " +
-        "and the uptime of the last 24 hours. Newest first. Paginated with page (zero-based, default 0) and size " +
-        "(1 to 50, default 10); totalElements counts only the requested scope.",
+        "active guest monitors (owned: false), which the admin can manage. Each one comes with its current status, " +
+        "the uptime of the last 24 hours and its last 24 checks (recentChecks) for the sparkline. Newest first. " +
+        "Paginated with page (zero-based, default 0) and size (1 to 50, default 10); totalElements counts only " +
+        "the requested scope.",
 )
 @ApiResponse(
     responseCode = "200",
@@ -236,8 +239,75 @@ annotation class DeleteMonitorDocs
 )
 annotation class CheckMonitorDocs
 
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@Operation(
+    summary = "Monitor stats",
+    description = "Summary of the last 24 hours: uptime, checks per status and latency. The latency only counts UP " +
+        "checks, since a timeout is not a latency. Same access as the monitor detail.",
+)
+@ApiResponse(
+    responseCode = "200",
+    description = "Stats of the last 24 hours.",
+    content = [
+        Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = MonitorStatsResponse::class),
+            examples = [ExampleObject(name = "Mostly up", value = STATS_EXAMPLE)],
+        ),
+    ],
+)
+@ApiResponse(
+    responseCode = "401",
+    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
+@ApiResponse(
+    responseCode = "404",
+    description = "It does not exist, it expired or it is someone else's private monitor (reason NOT_FOUND).",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
+@ApiResponse(
+    responseCode = "429",
+    description = "Too many requests from this guest (reason RATE_LIMITED). See Retry-After.",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
 annotation class MonitorStatsDocs
 
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@Operation(
+    summary = "Monitor results",
+    description = "Every check of the last 24 hours, oldest first, for the latency chart and the status line. " +
+        "About 144 points plus the manual checks, with gaps while the server was asleep. Same access as the " +
+        "monitor detail.",
+)
+@ApiResponse(
+    responseCode = "200",
+    description = "Checks of the last 24 hours.",
+    content = [
+        Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = CheckResultsResponse::class),
+            examples = [ExampleObject(name = "Two checks", value = RESULTS_EXAMPLE)],
+        ),
+    ],
+)
+@ApiResponse(
+    responseCode = "401",
+    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
+@ApiResponse(
+    responseCode = "404",
+    description = "It does not exist, it expired or it is someone else's private monitor (reason NOT_FOUND).",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
+@ApiResponse(
+    responseCode = "429",
+    description = "Too many requests from this guest (reason RATE_LIMITED). See Retry-After.",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
 annotation class MonitorResultsDocs
 
 private const val MONITOR_EXAMPLE = """
@@ -247,6 +317,8 @@ private const val MONITOR_EXAMPLE = """
  "lastCheck": {"checkedAt": "2026-11-10T14:00:00Z", "status": "UP", "reason": "SUCCESS",
   "message": "The site is up and responding", "httpStatus": 200, "latencyMs": 142},
  "uptime": {"percentage": 100.0, "checks": 12},
+ "recentChecks": [{"checkedAt": "2026-11-10T13:50:00Z", "status": "UP", "latencyMs": 156},
+  {"checkedAt": "2026-11-10T14:00:00Z", "status": "UP", "latencyMs": 142}],
  "createdAt": "2026-11-10T13:00:00Z", "updatedAt": "2026-11-10T13:00:00Z"}
 """
 
@@ -257,11 +329,26 @@ private const val CREATED_EXAMPLE = """
 {"id": "0d2e4f61-7a8b-4c9d-8e1f-2a3b4c5d6e7f", "name": "My site", "url": "https://example.com/",
  "isPublic": false, "enabled": true, "owned": true, "expiresAt": "2026-11-11T02:00:00Z",
  "nextCheckAt": "2026-11-10T14:00:00Z", "lastCheck": null, "uptime": {"percentage": null, "checks": 0},
- "createdAt": "2026-11-10T14:00:00Z", "updatedAt": "2026-11-10T14:00:00Z"}
+ "recentChecks": [], "createdAt": "2026-11-10T14:00:00Z", "updatedAt": "2026-11-10T14:00:00Z"}
 """
 
 private const val CHECK_EXAMPLE = """
 {"checkedAt": "2026-11-10T14:00:00Z", "status": "UP", "reason": "SUCCESS",
  "message": "The site is up and responding", "httpStatus": 200, "latencyMs": 142,
  "finalUrl": "https://portfoliocarloslagos.netlify.app/", "redirects": 0}
+"""
+
+private const val STATS_EXAMPLE = """
+{"from": "2026-11-09T14:00:00Z", "to": "2026-11-10T14:00:00Z", "uptime": {"percentage": 98.6, "checks": 142},
+ "byStatus": {"UP": 140, "DOWN": 2, "BLOCKED": 0, "REJECTED": 0}, "latency": {"avgMs": 180, "p95Ms": 410}}
+"""
+
+private const val RESULTS_EXAMPLE = """
+{"from": "2026-11-09T14:00:00Z", "to": "2026-11-10T14:00:00Z", "results": [
+ {"checkedAt": "2026-11-10T13:50:00Z", "status": "UP", "reason": "SUCCESS",
+  "message": "The site is up and responding", "httpStatus": 200, "latencyMs": 142,
+  "finalUrl": "https://portfoliocarloslagos.netlify.app/", "redirects": 0},
+ {"checkedAt": "2026-11-10T14:00:00Z", "status": "DOWN", "reason": "TIMEOUT",
+  "message": "The site took too long to respond", "httpStatus": 0, "latencyMs": 10003,
+  "finalUrl": "https://portfoliocarloslagos.netlify.app/", "redirects": 0}]}
 """

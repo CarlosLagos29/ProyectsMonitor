@@ -29,6 +29,12 @@ export interface LastCheck {
   latencyMs: number
 }
 
+export interface RecentCheck {
+  checkedAt: Date
+  status: HealthStatus
+  latencyMs: number
+}
+
 export interface CheckResult extends LastCheck {
   finalUrl: string
   redirects: number
@@ -45,6 +51,7 @@ export interface Monitor {
   nextCheckAt: Date
   lastCheck: LastCheck | null
   uptime: Uptime
+  recentChecks: RecentCheck[]
   createdAt: Date
   updatedAt: Date
 }

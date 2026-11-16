@@ -28,6 +28,8 @@
       <p>{{ uptimeText }}</p>
     </div>
 
+    <MonitorSparkline :checks="monitor.recentChecks" />
+
     <ul class="flex flex-wrap gap-2 text-xs">
       <li v-if="!monitor.enabled" class="rounded bg-gray-200 px-2 py-0.5">Pausado</li>
       <li v-if="canSetPublic && monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">
@@ -89,13 +91,14 @@ import { useSessionStore } from '@/stores/session'
 import { formatElapsed, formatRemaining } from '@/utils/time'
 
 import type { MonitorCardData } from '../components.types'
+import MonitorSparkline from './MonitorSparkline.vue'
 import StatusBadge from './StatusBadge.vue'
 
 const TICK_MS = 1_000
 
 export default {
   name: 'MonitorCard',
-  components: { StatusBadge },
+  components: { MonitorSparkline, StatusBadge },
   props: {
     monitor: {
       type: Object as PropType<Monitor>,

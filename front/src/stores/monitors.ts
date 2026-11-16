@@ -15,6 +15,7 @@ import { useSessionStore } from './session'
 import type { MonitorsState } from './stores.types'
 
 export const PAGE_SIZE = 10
+export const RECENT_CHECKS_MAX = 24
 
 let lastRequest = 0
 
@@ -65,8 +66,8 @@ export const useMonitorsStore = defineStore('monitors', {
         }
         this.items = result.monitors
         this.page = result.page
-        if (this.activeScope === 'OWN' && result.page.number === 0) {
-          this.ownedCount = result.monitors.filter((monitor) => monitor.owned).length
+        if (this.activeScope === 'OWN') {
+          this.ownedCount = result.page.totalElements
         }
         this.loaded = true
         this.error = null
@@ -126,6 +127,13 @@ export const useMonitorsStore = defineStore('monitors', {
           reason: result.reason,
           httpStatus: result.httpStatus,
           latencyMs: result.latencyMs,
+        }
+        const latest = monitor.recentChecks.at(-1)
+        if (!latest || result.checkedAt.getTime() > latest.checkedAt.getTime()) {
+          monitor.recentChecks = [
+            ...monitor.recentChecks,
+            { checkedAt: result.checkedAt, status: result.status, latencyMs: result.latencyMs },
+          ].slice(-RECENT_CHECKS_MAX)
         }
       }
       return result

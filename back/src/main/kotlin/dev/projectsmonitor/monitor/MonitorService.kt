@@ -2,6 +2,7 @@ package dev.projectsmonitor.monitor
 
 import dev.projectsmonitor.auth.CurrentUser
 import dev.projectsmonitor.check.UrlNormalizer
+import dev.projectsmonitor.common.enums.HealthStatus
 import dev.projectsmonitor.config.AppProperties
 import dev.projectsmonitor.error.ApiErrorReason
 import dev.projectsmonitor.error.ApiException
@@ -16,6 +17,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -31,7 +33,22 @@ data class Uptime(val checks: Long, val upChecks: Long) {
     val percentage: Double? get() = if (checks == 0L) null else (upChecks * 1000.0 / checks).roundToLong() / 10.0
 }
 
-data class MonitorView(val monitor: Monitor, val owned: Boolean, val uptime: Uptime)
+data class MonitorView(
+    val monitor: Monitor,
+    val owned: Boolean,
+    val uptime: Uptime,
+    val recentChecks: List<RecentCheck>,
+)
+
+data class MonitorStats(
+    val from: Instant,
+    val to: Instant,
+    val uptime: Uptime,
+    val byStatus: Map<HealthStatus, Long>,
+    val latency: LatencyStats,
+)
+
+data class MonitorResults(val from: Instant, val to: Instant, val results: List<CheckResult>)
 
 fun monitorNotFound() = ApiException(HttpStatus.NOT_FOUND, ApiErrorReason.NOT_FOUND, "Monitor not found")
 
@@ -46,6 +63,7 @@ class MonitorService(
     private companion object {
         val LOG: Logger = LoggerFactory.getLogger(MonitorService::class.java)
         val UPTIME_WINDOW: Duration = Duration.ofHours(24)
+        const val RECENT_CHECKS = 24
     }
 
     private val limits = properties.limits
@@ -56,14 +74,32 @@ class MonitorService(
     fun list(user: CurrentUser, query: MonitorListQuery): Page<MonitorView> {
         val now = now()
         val monitors = findPage(user, query.scope, now, PageRequest.of(query.page, query.size))
-        val uptimes = uptimesOf(monitors.content.map { it.id }, now)
-        return monitors.map { MonitorView(it, it.isOwnedBy(user, now), uptimes[it.id] ?: Uptime(0, 0)) }
+        return PageImpl(viewsOf(monitors.content, user, now), monitors.pageable, monitors.totalElements)
     }
 
     @Transactional(readOnly = true)
     fun get(id: UUID, user: CurrentUser): MonitorView {
         val now = now()
         return viewOf(findVisible(id, user, now), user, now)
+    }
+
+    @Transactional(readOnly = true)
+    fun stats(id: UUID, user: CurrentUser): MonitorStats {
+        val now = now()
+        val from = now.minus(UPTIME_WINDOW)
+        val monitor = findVisible(id, user, now)
+        val counts = checkResultRepository.countByStatus(monitor.id, from).associate { it.status to it.checks }
+        val byStatus = HealthStatus.entries.associateWith { counts[it] ?: 0L }
+        val uptime = Uptime(byStatus.values.sum(), byStatus.getValue(HealthStatus.UP))
+        return MonitorStats(from, now, uptime, byStatus, checkResultRepository.findUpLatency(monitor.id, from))
+    }
+
+    @Transactional(readOnly = true)
+    fun results(id: UUID, user: CurrentUser): MonitorResults {
+        val now = now()
+        val from = now.minus(UPTIME_WINDOW)
+        val monitor = findVisible(id, user, now)
+        return MonitorResults(from, now, checkResultRepository.findSince(monitor.id, from))
     }
 
     @Transactional
@@ -78,7 +114,7 @@ class MonitorService(
             throw monitorLimitReached()
         }
         LOG.info("Monitor created: id={} owner={} url={}", monitor.id, monitor.ownerId ?: CurrentUser.ADMIN_ID, url)
-        return MonitorView(monitor, owned = true, uptime = Uptime(0, 0))
+        return MonitorView(monitor, owned = true, uptime = Uptime(0, 0), recentChecks = emptyList())
     }
 
     @Transactional
@@ -170,16 +206,20 @@ class MonitorService(
     private fun forbidden(detail: String) =
         ApiException(HttpStatus.FORBIDDEN, ApiErrorReason.FORBIDDEN_FOR_ROLE, detail)
 
-    private fun viewOf(monitor: Monitor, user: CurrentUser, now: Instant) = MonitorView(
-        monitor,
-        monitor.isOwnedBy(user, now),
-        uptimesOf(listOf(monitor.id), now)[monitor.id] ?: Uptime(0, 0),
-    )
+    private fun viewOf(monitor: Monitor, user: CurrentUser, now: Instant) = viewsOf(listOf(monitor), user, now).single()
 
-    private fun uptimesOf(ids: List<UUID>, now: Instant): Map<UUID, Uptime> {
-        if (ids.isEmpty()) return emptyMap()
-        return checkResultRepository.countUptime(ids, now.minus(UPTIME_WINDOW))
-            .associate { it.monitorId to Uptime(it.checks, it.upChecks) }
+    private fun viewsOf(monitors: List<Monitor>, user: CurrentUser, now: Instant): List<MonitorView> {
+        if (monitors.isEmpty()) return emptyList()
+        val ids = monitors.map { it.id }
+        val from = now.minus(UPTIME_WINDOW)
+        val uptimes = checkResultRepository.countUptime(ids, from).associate {
+            it.monitorId to
+                Uptime(it.checks, it.upChecks)
+        }
+        val recent = checkResultRepository.findRecent(ids, from, RECENT_CHECKS).groupBy { it.monitorId }
+        return monitors.map {
+            MonitorView(it, it.isOwnedBy(user, now), uptimes[it.id] ?: Uptime(0, 0), recent[it.id].orEmpty())
+        }
     }
 
     private fun monitorLimitReached() =

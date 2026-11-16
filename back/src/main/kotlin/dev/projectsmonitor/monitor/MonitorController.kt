@@ -2,10 +2,12 @@ package dev.projectsmonitor.monitor
 
 import dev.projectsmonitor.auth.CurrentUser
 import dev.projectsmonitor.monitor.dto.CheckResultResponse
+import dev.projectsmonitor.monitor.dto.CheckResultsResponse
 import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
 import dev.projectsmonitor.monitor.dto.MonitorListQuery
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
+import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.mapper.CheckResultMapper
 import dev.projectsmonitor.monitor.mapper.MonitorMapper
@@ -77,6 +79,20 @@ class MonitorController(private val monitorService: MonitorService) {
     fun delete(@PathVariable id: UUID, user: CurrentUser) {
         LOG.info("Delete monitor: id={} user={}", id, user.id)
         monitorService.delete(id, user)
+    }
+
+    @GetMapping("/{id}/stats")
+    @MonitorStatsDocs
+    fun stats(@PathVariable id: UUID, user: CurrentUser): MonitorStatsResponse {
+        LOG.info("Monitor stats: id={} user={}", id, user.id)
+        return CheckResultMapper.toStatsResponse(monitorService.stats(id, user))
+    }
+
+    @GetMapping("/{id}/results")
+    @MonitorResultsDocs
+    fun results(@PathVariable id: UUID, user: CurrentUser): CheckResultsResponse {
+        LOG.info("Monitor results: id={} user={}", id, user.id)
+        return CheckResultMapper.toResultsResponse(monitorService.results(id, user))
     }
 
     @PostMapping("/{id}/check")
