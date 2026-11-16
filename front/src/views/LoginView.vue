@@ -21,17 +21,28 @@
         />
         <span v-if="emailInvalid" class="text-sm text-red-600">{{ $t('login.required') }}</span>
       </label>
-      <label class="block">
-        <span class="text-sm">{{ $t('login.password') }}</span>
-        <input
-          v-model="password"
-          type="password"
-          autocomplete="current-password"
-          class="mt-1 w-full rounded border px-2 py-1"
-          :aria-invalid="passwordInvalid"
-        />
+      <div>
+        <label for="login-password" class="text-sm">{{ $t('login.password') }}</label>
+        <div class="mt-1 flex gap-2">
+          <input
+            id="login-password"
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            autocomplete="current-password"
+            class="w-full rounded border px-2 py-1"
+            :aria-invalid="passwordInvalid"
+          />
+          <button
+            type="button"
+            class="shrink-0 rounded border px-2 py-1 text-sm"
+            :aria-pressed="showPassword"
+            @click="showPassword = !showPassword"
+          >
+            {{ showPassword ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
         <span v-if="passwordInvalid" class="text-sm text-red-600">{{ $t('login.required') }}</span>
-      </label>
+      </div>
       <p v-if="loginError" role="alert" class="text-sm text-red-600">
         {{ $t(loginError.key, loginError.params) }}
       </p>
@@ -74,6 +85,7 @@ export default {
     return {
       email: '',
       password: '',
+      showPassword: false,
       submitted: false,
       serverFieldErrors: {},
       loggingIn: false,

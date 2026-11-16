@@ -50,6 +50,10 @@ interface MonitorRepository : JpaRepository<Monitor, UUID> {
     fun findDueForUpdate(now: Instant, limit: Int): List<Monitor>
 
     @Modifying
+    @Query("update Monitor m set m.nextCheckAt = :at where m.id in :ids")
+    fun reschedule(ids: Collection<UUID>, at: Instant): Int
+
+    @Modifying
     @Query("delete from Monitor m where m.expiresAt <= :now")
     fun deleteExpired(now: Instant): Int
 }

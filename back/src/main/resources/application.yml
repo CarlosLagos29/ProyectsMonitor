@@ -20,9 +20,6 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
 
 management:
   endpoints:
@@ -34,10 +31,7 @@ management:
       show-details: never
 
 springdoc:
-  api-docs:
-    enabled: true
   swagger-ui:
-    enabled: true
     path: /docs
 
 app:
@@ -73,6 +67,7 @@ app:
       total: 10s
     max-redirects: 5
     allowed-ports: [80, 443]
+    result-ttl: 9m
     per-host:
       capacity: 10
       period: 1m

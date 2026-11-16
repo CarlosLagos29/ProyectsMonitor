@@ -1,7 +1,5 @@
 package dev.projectsmonitor.auth.dto
 
-import dev.projectsmonitor.auth.CurrentUser
-import dev.projectsmonitor.config.AppProperties
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 

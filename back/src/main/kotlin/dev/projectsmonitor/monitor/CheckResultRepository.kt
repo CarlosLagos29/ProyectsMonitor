@@ -13,6 +13,8 @@ data class StatusCount(val status: HealthStatus, val checks: Long)
 
 interface CheckResultRepository : JpaRepository<CheckResult, Long> {
 
+    fun findFirstByMonitorIdOrderByCheckedAtDesc(monitorId: UUID): CheckResult?
+
     @Query(
         """
         select r from CheckResult r

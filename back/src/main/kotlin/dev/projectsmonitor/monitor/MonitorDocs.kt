@@ -189,7 +189,9 @@ annotation class DeleteMonitorDocs
 @Operation(
     summary = "Check now",
     description = "Checks the monitor right away, stores the result and moves the next scheduled check to 10 " +
-        "minutes from now. Takes up to about 10 seconds. A site that is down is still a 200 with status DOWN. " +
+        "minutes after checkedAt. Takes up to about 10 seconds. If the same URL was checked in the last 9 minutes, " +
+        "that result is reused and checkedAt tells when it was taken. A site that is down is still a 200 with " +
+        "status DOWN. " +
         "Once per minute per monitor, and a guest can do it 10 times per hour.",
 )
 @ApiResponse(

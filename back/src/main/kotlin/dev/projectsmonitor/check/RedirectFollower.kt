@@ -21,6 +21,11 @@ class RedirectFollower(
     private val totalTimeout: Duration,
 ) {
 
+    private companion object {
+        val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
+        val HEAD_NOT_SUPPORTED_CODES = setOf(405, 501)
+    }
+
     fun execute(request: Request): FollowedResponse {
         val deadline = System.nanoTime() + totalTimeout.toNanos()
         var current = request
@@ -58,10 +63,5 @@ class RedirectFollower(
         val call = client.newCall(request)
         call.timeout().timeout(remaining, TimeUnit.NANOSECONDS)
         return call.execute().use { it.code to it.header("Location") }
-    }
-
-    private companion object {
-        val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
-        val HEAD_NOT_SUPPORTED_CODES = setOf(405, 501)
     }
 }

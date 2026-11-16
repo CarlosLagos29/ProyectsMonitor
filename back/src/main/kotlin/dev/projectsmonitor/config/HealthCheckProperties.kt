@@ -10,6 +10,7 @@ data class HealthCheckProperties(
     val maxRedirects: Int,
     val allowedPorts: Set<Int>,
     val perHost: RateLimit,
+    val resultTtl: Duration,
 ) {
     data class Timeouts(val connect: Duration, val read: Duration, val total: Duration)
 }
