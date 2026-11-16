@@ -19,8 +19,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
-    companion object {
-        private val LOG: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+    private companion object {
+        val LOG: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
     }
 
     @ExceptionHandler(ApiException::class)

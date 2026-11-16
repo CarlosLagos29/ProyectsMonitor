@@ -1,6 +1,5 @@
 package dev.projectsmonitor.auth.dto
 
-import dev.projectsmonitor.auth.token.IssuedToken
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 

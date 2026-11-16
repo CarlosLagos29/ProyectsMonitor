@@ -1,7 +1,5 @@
 package dev.projectsmonitor.auth.dto
 
-import dev.projectsmonitor.auth.Role
-import dev.projectsmonitor.config.AppProperties
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class LimitsResponse(

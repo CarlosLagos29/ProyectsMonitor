@@ -1,6 +1,5 @@
 package dev.projectsmonitor.monitor.dto
 
-import dev.projectsmonitor.monitor.MonitorView
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.util.UUID

@@ -11,9 +11,9 @@ import java.time.Instant
 @Service
 class HealthCheckService(private val redirectFollower: RedirectFollower) {
 
-    companion object {
-        private val LOG: Logger = LoggerFactory.getLogger(HealthCheckService::class.java)
-        private const val USER_AGENT = "ProjectsMonitor/1.0 (+https://github.com/CarlosLagos29/ProjectsMonitor)"
+    private companion object {
+        val LOG: Logger = LoggerFactory.getLogger(HealthCheckService::class.java)
+        const val USER_AGENT = "ProjectsMonitor/1.0 (+https://github.com/CarlosLagos29/ProjectsMonitor)"
     }
 
     fun check(target: HttpUrl): HealthCheckResult {

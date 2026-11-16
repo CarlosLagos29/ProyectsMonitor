@@ -1,9 +1,7 @@
 package dev.projectsmonitor.monitor.dto
 
-import dev.projectsmonitor.check.toMessage
 import dev.projectsmonitor.common.enums.HealthReason
 import dev.projectsmonitor.common.enums.HealthStatus
-import dev.projectsmonitor.monitor.CheckResult
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 

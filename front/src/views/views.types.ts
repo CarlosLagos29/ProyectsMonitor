@@ -4,6 +4,7 @@ import type { ErrorMessage } from '@/api/errors'
 export interface LoginData {
   email: string
   password: string
+  showPassword: boolean
   submitted: boolean
   serverFieldErrors: Record<string, string>
   loggingIn: boolean

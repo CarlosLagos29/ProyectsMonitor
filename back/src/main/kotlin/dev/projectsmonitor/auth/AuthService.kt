@@ -36,7 +36,7 @@ class AuthService(
             LOG.warn("Failed admin login: ip={}", clientIp.toLogSafe())
             throw ApiException(HttpStatus.UNAUTHORIZED, ApiErrorReason.INVALID_CREDENTIALS, "Invalid email or password")
         }
-        LOG.warn("Admin logged in, previous admin session closed: ip={}", clientIp.toLogSafe())
+        LOG.info("Admin logged in: ip={}", clientIp.toLogSafe())
         return jwtService.issue(CurrentUser.ADMIN_ID, Role.ADMIN, adminSession.start())
     }
 
