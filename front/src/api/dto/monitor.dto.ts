@@ -22,9 +22,12 @@ export interface PageDto {
   totalPages: number
 }
 
+export type MonitorScopeDto = 'OWN' | 'PUBLIC' | 'GUESTS'
+
 export interface MonitorListQueryDto {
   page?: number
   size?: number
+  scope?: MonitorScopeDto
 }
 
 export interface MonitorListResponseDto {

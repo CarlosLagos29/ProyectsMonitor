@@ -19,16 +19,25 @@ interface MonitorRepository : JpaRepository<Monitor, UUID> {
 
     @Query(
         value = """
-        select m from Monitor m
-        where (m.ownerId = :guestId and m.expiresAt > :now) or (m.ownerId is null and m.isPublic = true)
-        order by case when m.ownerId = :guestId then 0 else 1 end, m.createdAt desc, m.id
+        select m from Monitor m where m.ownerId = :guestId and m.expiresAt > :now order by m.createdAt desc, m.id
         """,
-        countQuery = """
-        select count(m) from Monitor m
-        where (m.ownerId = :guestId and m.expiresAt > :now) or (m.ownerId is null and m.isPublic = true)
-        """,
+        countQuery = "select count(m) from Monitor m where m.ownerId = :guestId and m.expiresAt > :now",
     )
-    fun findVisibleToGuest(guestId: UUID, now: Instant, pageable: Pageable): Page<Monitor>
+    fun findActiveGuestMonitor(guestId: UUID, now: Instant, pageable: Pageable): Page<Monitor>
+
+    @Query(
+        value = "select m from Monitor m where m.ownerId is null and m.isPublic = true order by m.createdAt desc, m.id",
+        countQuery = "select count(m) from Monitor m where m.ownerId is null and m.isPublic = true",
+    )
+    fun findPublicMonitors(pageable: Pageable): Page<Monitor>
+
+    @Query(
+        value = """
+        select m from Monitor m where m.ownerId is not null and m.expiresAt > :now order by m.createdAt desc, m.id
+        """,
+        countQuery = "select count(m) from Monitor m where m.ownerId is not null and m.expiresAt > :now",
+    )
+    fun findGuestMonitors(now: Instant, pageable: Pageable): Page<Monitor>
 
     fun findByOwnerId(ownerId: UUID): Monitor?
 

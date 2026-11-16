@@ -16,10 +16,12 @@ private const val PROBLEM = "application/problem+json"
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "List monitors",
-    description = "Admin: all of their monitors. Guest: their own monitor, if any, plus the admin's public ones " +
-        "(owned: false, read-only). Each one comes with its current status and the uptime of the last 24 hours. " +
-        "Own monitors first, then newest first. Paginated with page (zero-based, default 0) and size (1 to 50, " +
-        "default 10).",
+    description = "One list per scope. OWN (default): the admin gets all of their monitors, public and private; " +
+        "a guest gets only their own monitor, if they created it and it has not expired. PUBLIC: the admin's " +
+        "public monitors (owned: true for the admin, false and read-only for a guest). GUESTS, admin only: the " +
+        "active guest monitors (owned: false), which the admin can manage. Each one comes with its current status " +
+        "and the uptime of the last 24 hours. Newest first. Paginated with page (zero-based, default 0) and size " +
+        "(1 to 50, default 10); totalElements counts only the requested scope.",
 )
 @ApiResponse(
     responseCode = "200",
@@ -28,18 +30,23 @@ private const val PROBLEM = "application/problem+json"
         Content(
             mediaType = "application/json",
             schema = Schema(implementation = MonitorListResponse::class),
-            examples = [ExampleObject(name = "Guest", value = LIST_EXAMPLE)],
+            examples = [ExampleObject(name = "Guest, scope PUBLIC", value = LIST_EXAMPLE)],
         ),
     ],
 )
 @ApiResponse(
     responseCode = "400",
-    description = "page or size out of range (reason VALIDATION_ERROR, with errors per field).",
+    description = "page, size or scope invalid (reason VALIDATION_ERROR, with errors per field).",
     content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
     responseCode = "401",
     description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
+    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+)
+@ApiResponse(
+    responseCode = "403",
+    description = "A guest sent scope GUESTS (reason FORBIDDEN_FOR_ROLE).",
     content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
@@ -150,7 +157,8 @@ annotation class CreateMonitorDocs
 )
 @ApiResponse(
     responseCode = "403",
-    description = "Someone else's public monitor, or a guest sent isPublic: true (reason FORBIDDEN_FOR_ROLE).",
+    description = "A guest on someone else's public monitor, a guest sent isPublic: true, or the admin sent " +
+        "isPublic: true on a guest monitor (reason FORBIDDEN_FOR_ROLE).",
     content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
@@ -174,7 +182,7 @@ annotation class UpdateMonitorDocs
 )
 @ApiResponse(
     responseCode = "403",
-    description = "Someone else's public monitor (reason FORBIDDEN_FOR_ROLE).",
+    description = "A guest on someone else's public monitor (reason FORBIDDEN_FOR_ROLE).",
     content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
@@ -212,7 +220,7 @@ annotation class DeleteMonitorDocs
 )
 @ApiResponse(
     responseCode = "403",
-    description = "Someone else's public monitor (reason FORBIDDEN_FOR_ROLE).",
+    description = "A guest on someone else's public monitor (reason FORBIDDEN_FOR_ROLE).",
     content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(

@@ -51,6 +51,9 @@ export function toMonitorListQuery(params: MonitorListParams): MonitorListQueryD
   if (params.size !== undefined) {
     query.size = params.size
   }
+  if (params.scope !== undefined) {
+    query.scope = params.scope
+  }
   return query
 }
 

@@ -33,11 +33,14 @@
       <li v-if="canSetPublic && monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">
         {{ monitor.isPublic ? 'Público' : 'Privado' }}
       </li>
-      <li v-if="!monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">Solo lectura</li>
+      <li v-if="isAdmin && !monitor.owned" class="rounded bg-gray-100 px-2 py-0.5">
+        De un invitado
+      </li>
+      <li v-if="!canManage" class="rounded bg-gray-100 px-2 py-0.5">Solo lectura</li>
       <li v-if="expiresText" class="rounded bg-amber-100 px-2 py-0.5">{{ expiresText }}</li>
     </ul>
 
-    <div v-if="monitor.owned" class="flex flex-wrap gap-2">
+    <div v-if="canManage" class="flex flex-wrap gap-2">
       <button
         type="button"
         class="rounded border px-2 py-1 text-sm"
@@ -111,8 +114,11 @@ export default {
     }
   },
   computed: {
-    ...mapState(useSessionStore, ['limits']),
+    ...mapState(useSessionStore, ['limits', 'isAdmin']),
     ...mapState(useMonitorsStore, ['canSetPublic']),
+    canManage(): boolean {
+      return this.isAdmin || this.monitor.owned
+    },
     lastCheckedText(): string {
       return this.monitor.lastCheck ? formatElapsed(this.monitor.lastCheck.checkedAt, this.now) : ''
     },
@@ -135,7 +141,7 @@ export default {
       return `Uptime 24 h: ${percentage}% (basado en ${checks} ${checks === 1 ? 'chequeo' : 'chequeos'})`
     },
     expiresText(): string {
-      if (!this.monitor.owned || !this.monitor.expiresAt) {
+      if (!this.monitor.expiresAt) {
         return ''
       }
       return `Se borra en ${formatRemaining(this.monitor.expiresAt.getTime() - this.now)}`

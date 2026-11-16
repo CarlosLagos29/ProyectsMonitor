@@ -7,6 +7,7 @@ import dev.projectsmonitor.error.ApiErrorReason
 import dev.projectsmonitor.error.ApiException
 import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
 import dev.projectsmonitor.monitor.dto.MonitorListQuery
+import dev.projectsmonitor.monitor.dto.MonitorScope
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.mapper.MonitorMapper
 import dev.projectsmonitor.ratelimit.KeyedRateLimiter
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -53,10 +55,7 @@ class MonitorService(
     @Transactional(readOnly = true)
     fun list(user: CurrentUser, query: MonitorListQuery): Page<MonitorView> {
         val now = now()
-        val pageable = PageRequest.of(query.page, query.size)
-        val monitors = user.guestId
-            ?.let { monitorRepository.findVisibleToGuest(it, now, pageable) }
-            ?: monitorRepository.findAdminMonitors(pageable)
+        val monitors = findPage(user, query.scope, now, PageRequest.of(query.page, query.size))
         val uptimes = uptimesOf(monitors.content.map { it.id }, now)
         return monitors.map { MonitorView(it, it.isOwnedBy(user, now), uptimes[it.id] ?: Uptime(0, 0)) }
     }
@@ -70,7 +69,7 @@ class MonitorService(
     @Transactional
     fun create(request: CreateMonitorRequest, user: CurrentUser): MonitorView {
         val now = now()
-        rejectPublicForGuest(request.isPublic, user)
+        rejectPublic(request.isPublic, null, user)
         val url = UrlNormalizer.normalize(request.url)
         user.guestId?.let { reserveGuestSlot(it, now) }
         val monitor = try {
@@ -85,8 +84,8 @@ class MonitorService(
     @Transactional
     fun update(id: UUID, request: UpdateMonitorRequest, user: CurrentUser): MonitorView {
         val now = now()
-        val current = findOwned(id, user, now)
-        rejectPublicForGuest(request.isPublic, user)
+        val current = findManageable(id, user, now)
+        rejectPublic(request.isPublic, current, user)
         val updated = monitorRepository.save(MonitorMapper.toUpdated(current, request, now))
         LOG.info("Monitor updated: id={} enabled={} isPublic={}", updated.id, updated.enabled, updated.isPublic)
         return viewOf(updated, user, now)
@@ -94,13 +93,13 @@ class MonitorService(
 
     @Transactional
     fun delete(id: UUID, user: CurrentUser) {
-        val monitor = findOwned(id, user, now())
+        val monitor = findManageable(id, user, now())
         monitorRepository.delete(monitor)
         LOG.info("Monitor deleted: id={}", monitor.id)
     }
 
     fun check(id: UUID, user: CurrentUser): CheckResult {
-        val monitor = findOwned(id, user, now())
+        val monitor = findManageable(id, user, now())
         manualCheckCooldown.acquire(monitor.id.toString())
         user.guestId?.let { guestManualChecks.acquire(it.toString()) }
         return monitorChecker.check(monitor)
@@ -126,33 +125,50 @@ class MonitorService(
         }
     }
 
+    private fun findPage(user: CurrentUser, scope: MonitorScope, now: Instant, pageable: Pageable): Page<Monitor> =
+        when (scope) {
+            MonitorScope.OWN ->
+                user.guestId
+                    ?.let { monitorRepository.findActiveGuestMonitor(it, now, pageable) }
+                    ?: monitorRepository.findAdminMonitors(pageable)
+
+            MonitorScope.PUBLIC -> monitorRepository.findPublicMonitors(pageable)
+
+            MonitorScope.GUESTS -> if (user.isAdmin) {
+                monitorRepository.findGuestMonitors(now, pageable)
+            } else {
+                throw forbidden("Only the admin can list guest monitors")
+            }
+        }
+
     private fun findVisible(id: UUID, user: CurrentUser, now: Instant): Monitor {
         val monitor = monitorRepository.findById(id).orElseThrow { monitorNotFound() }
-        val visible = monitor.isOwnedBy(user, now) || (!user.isAdmin && monitor.ownerId == null && monitor.isPublic)
+        val visible = monitor.isOwnedBy(user, now) ||
+            (user.isAdmin && monitor.isActiveGuestMonitor(now)) ||
+            (!user.isAdmin && monitor.ownerId == null && monitor.isPublic)
         if (!visible) throw monitorNotFound()
         return monitor
     }
 
-    private fun findOwned(id: UUID, user: CurrentUser, now: Instant): Monitor {
+    private fun findManageable(id: UUID, user: CurrentUser, now: Instant): Monitor {
         val monitor = findVisible(id, user, now)
-        if (!monitor.isOwnedBy(user, now)) {
-            throw ApiException(HttpStatus.FORBIDDEN, ApiErrorReason.FORBIDDEN_FOR_ROLE, "This monitor is read-only")
-        }
+        if (!user.isAdmin && !monitor.isOwnedBy(user, now)) throw forbidden("This monitor is read-only")
         return monitor
     }
+
+    private fun Monitor.isActiveGuestMonitor(now: Instant): Boolean = ownerId != null && expiresAt?.isAfter(now) == true
 
     private fun Monitor.isOwnedBy(user: CurrentUser, now: Instant): Boolean =
         if (user.isAdmin) ownerId == null else ownerId == user.guestId && expiresAt?.isAfter(now) == true
 
-    private fun rejectPublicForGuest(isPublic: Boolean?, user: CurrentUser) {
-        if (isPublic == true && !user.isAdmin) {
-            throw ApiException(
-                HttpStatus.FORBIDDEN,
-                ApiErrorReason.FORBIDDEN_FOR_ROLE,
-                "Guests cannot make monitors public",
-            )
-        }
+    private fun rejectPublic(isPublic: Boolean?, monitor: Monitor?, user: CurrentUser) {
+        if (isPublic != true) return
+        if (!user.isAdmin) throw forbidden("Guests cannot make monitors public")
+        if (monitor?.ownerId != null) throw forbidden("Guest monitors cannot be public")
     }
+
+    private fun forbidden(detail: String) =
+        ApiException(HttpStatus.FORBIDDEN, ApiErrorReason.FORBIDDEN_FOR_ROLE, detail)
 
     private fun viewOf(monitor: Monitor, user: CurrentUser, now: Instant) = MonitorView(
         monitor,

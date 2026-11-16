@@ -6,6 +6,9 @@
         ¿Seguro que querés borrar <strong>{{ monitor?.name }}</strong
         >? Se borra también todo su historial.
       </p>
+      <p v-if="monitor && !monitor.owned" class="text-sm">
+        Es el monitor de un invitado: lo pierde junto con su historial y no se puede deshacer.
+      </p>
       <p v-if="error" role="alert" class="text-sm text-red-600">
         {{ $t(error.key, error.params) }}
       </p>

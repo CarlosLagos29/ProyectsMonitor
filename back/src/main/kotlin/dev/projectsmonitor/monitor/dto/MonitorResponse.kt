@@ -34,7 +34,8 @@ data class MonitorResponse(
 
     @Schema(
         requiredMode = Schema.RequiredMode.REQUIRED,
-        description = "true if it belongs to the current user. false = someone else's public monitor, read-only",
+        description = "true if it belongs to the current user. false = a public monitor (read-only for a guest) or, " +
+            "for the admin, a guest monitor they can manage",
         example = "true",
     )
     val owned: Boolean,

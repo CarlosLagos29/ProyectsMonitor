@@ -7,7 +7,7 @@ data class MonitorListResponse(
     @ArraySchema(
         arraySchema = Schema(
             requiredMode = Schema.RequiredMode.REQUIRED,
-            description = "Monitors of the requested page. Own monitors first, then newest first",
+            description = "Monitors of the requested page, newest first",
         ),
     )
     val monitors: List<MonitorResponse>,

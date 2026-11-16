@@ -67,9 +67,12 @@ export interface MonitorPage {
   page: PageInfo
 }
 
+export type MonitorScope = 'OWN' | 'PUBLIC' | 'GUESTS'
+
 export interface MonitorListParams {
   page?: number
   size?: number
+  scope?: MonitorScope
 }
 
 export interface MonitorChanges {

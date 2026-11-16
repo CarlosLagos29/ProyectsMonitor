@@ -41,7 +41,7 @@ class MonitorController(private val monitorService: MonitorService) {
     @GetMapping
     @ListMonitorsDocs
     fun list(@Valid @ParameterObject query: MonitorListQuery, user: CurrentUser): MonitorListResponse {
-        LOG.info("List monitors: user={} page={} size={}", user.id, query.page, query.size)
+        LOG.info("List monitors: user={} scope={} page={} size={}", user.id, query.scope, query.page, query.size)
         return MonitorMapper.toListResponse(monitorService.list(user, query))
     }
 
