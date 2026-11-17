@@ -40,6 +40,12 @@ export interface CheckResult extends LastCheck {
   redirects: number
 }
 
+export interface CheckSeries {
+  from: Date
+  to: Date
+  results: CheckResult[]
+}
+
 export interface Monitor {
   id: string
   name: string

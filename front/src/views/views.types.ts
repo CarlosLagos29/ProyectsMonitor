@@ -1,10 +1,15 @@
-import type { Monitor } from '@/api/api.types'
+import type { CheckSeries, Monitor } from '@/api/api.types'
 import type { ErrorMessage } from '@/api/errors'
+
+export type GuestBlock = 'RATE_LIMITED' | 'GUEST_CAPACITY_REACHED'
 
 export interface LoginData {
   email: string
   password: string
   showPassword: boolean
+  failedAttempts: number
+  now: number
+  clockTimer: ReturnType<typeof setInterval> | undefined
   submitted: boolean
   serverFieldErrors: Record<string, string>
   loggingIn: boolean
@@ -12,6 +17,7 @@ export interface LoginData {
   enteringAsGuest: boolean
   guestError: ErrorMessage | null
   guestWaitSeconds: number
+  guestBlock: GuestBlock | null
   guestTimer: ReturnType<typeof setInterval> | undefined
 }
 
@@ -30,4 +36,8 @@ export interface MonitorDetailData {
   error: ErrorMessage | null
   formOpen: boolean
   deleteOpen: boolean
+  series: CheckSeries | null
+  seriesLoading: boolean
+  seriesError: ErrorMessage | null
+  pollTimer: ReturnType<typeof setInterval> | undefined
 }

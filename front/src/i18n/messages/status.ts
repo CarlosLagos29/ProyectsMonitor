@@ -6,7 +6,7 @@ export const statusEn = {
 }
 
 export const statusEs = {
-  UP: 'Activo',
+  UP: 'Operativo',
   DOWN: 'Caído',
   BLOCKED: 'Bloqueado',
   REJECTED: 'Rechazado',

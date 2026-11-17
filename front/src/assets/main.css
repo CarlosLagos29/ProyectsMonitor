@@ -1,1 +1,215 @@
 @import 'tailwindcss';
+
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/vt323-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+:root {
+  --background: #0a0d0b;
+  --card: #121714;
+  --popover: #121714;
+  --muted: #0e1310;
+  --border: #26302a;
+  --input: #26302a;
+  --skeleton: #1c2420;
+  --foreground: #d8e3da;
+  --muted-foreground: #8a9a8e;
+  --primary: #b8f2c2;
+  --primary-foreground: #0a0d0b;
+  --ring: #b8f2c2;
+  --destructive: #ff5a4f;
+  --warning: #f2c14e;
+  --feed: #0b100d;
+  --rec: #ff3b30;
+  --rec-off: #5e6b63;
+  --switch-off: #4a5a50;
+
+  --status-up: #7ee08a;
+  --status-down: #ff5a4f;
+  --status-blocked: #f2c14e;
+  --status-rejected: #c792ea;
+  --status-none: #7d8c82;
+
+  --scanlines: repeating-linear-gradient(0deg, #b8f2c20f 0 1px, transparent 1px 3px);
+  --vignette: radial-gradient(ellipse at center, #b8f2c21a, transparent 72%);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-skeleton: var(--skeleton);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-feed: var(--feed);
+  --color-rec: var(--rec);
+  --color-rec-off: var(--rec-off);
+  --color-switch-off: var(--switch-off);
+  --color-status-up: var(--status-up);
+  --color-status-down: var(--status-down);
+  --color-status-blocked: var(--status-blocked);
+  --color-status-rejected: var(--status-rejected);
+  --color-status-none: var(--status-none);
+
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-cam: 'VT323', ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--background);
+  }
+
+  body {
+    @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border px-4 font-cam text-[21px] leading-none uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  .btn-primary {
+    @apply border-primary bg-primary text-primary-foreground enabled:hover:bg-primary/85;
+  }
+
+  .btn-secondary {
+    @apply border-border bg-transparent text-foreground enabled:hover:border-primary enabled:hover:text-primary;
+  }
+
+  .btn-danger {
+    @apply border-destructive bg-transparent text-destructive enabled:hover:bg-destructive/10;
+  }
+
+  .btn-danger-solid {
+    @apply border-destructive bg-destructive text-primary-foreground enabled:hover:bg-destructive/85;
+  }
+
+  .btn-icon {
+    @apply size-11 shrink-0 px-0;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-[3px] border border-border px-2 py-0.5 text-xs text-muted-foreground;
+  }
+
+  .field {
+    @apply min-h-11 w-full min-w-0 rounded-sm border border-input bg-background px-3 text-foreground placeholder:text-muted-foreground/70 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:border-dashed disabled:bg-muted disabled:text-muted-foreground;
+  }
+
+  .field-error {
+    @apply flex items-center gap-1 text-sm text-destructive;
+  }
+
+  .notice {
+    @apply rounded-sm border border-border bg-muted p-3 text-sm;
+  }
+
+  .notice-tag {
+    @apply mr-1 font-cam text-[20px] leading-none uppercase;
+  }
+
+  .panel {
+    @apply rounded-md border border-border bg-card;
+  }
+
+  .cam-label {
+    @apply font-cam text-[20px] leading-none uppercase;
+  }
+
+  .scanlines {
+    background-image: var(--scanlines), var(--vignette);
+  }
+
+  .dialog {
+    @apply fixed inset-0 m-auto! h-fit max-h-[calc(100dvh-2rem)] w-95 max-w-[calc(100%-2rem)] overflow-y-auto rounded-md border border-border bg-card p-0 text-foreground shadow-2xl shadow-black/60 max-sm:m-0! max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none;
+  }
+
+  .dialog::backdrop {
+    background-color: #050706eb;
+    background-image: repeating-linear-gradient(0deg, #b8f2c208 0 1px, transparent 1px 3px);
+  }
+
+  .dialog-title {
+    @apply font-cam text-[28px] leading-none uppercase;
+  }
+
+  .rec-dot {
+    @apply inline-block size-2.5 rounded-full bg-rec;
+    animation: rec-blink 2s ease-in-out infinite;
+  }
+
+  .rec-dot-off {
+    @apply inline-block size-2.5 rounded-full border-2 border-rec-off;
+  }
+}
+
+@keyframes rec-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

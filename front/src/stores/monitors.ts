@@ -23,6 +23,7 @@ export const useMonitorsStore = defineStore('monitors', {
   state: (): MonitorsState => ({
     items: [],
     scope: null,
+    currentCam: null,
     page: null,
     ownedCount: 0,
     loading: false,
@@ -81,6 +82,10 @@ export const useMonitorsStore = defineStore('monitors', {
           this.fetching = false
         }
       }
+    },
+
+    setCurrentCam(cam: number | null) {
+      this.currentCam = cam
     },
 
     async setScope(scope: MonitorScope) {

@@ -1,8 +1,9 @@
 <template>
-  <ul class="grid gap-3">
-    <li v-for="monitor in monitors" :key="monitor.id">
+  <ul class="grid gap-5 min-[720px]:grid-cols-2">
+    <li v-for="(monitor, index) in monitors" :key="monitor.id" class="min-w-0">
       <MonitorCard
         :monitor="monitor"
+        :cam="offset + index + 1"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
       />
@@ -24,6 +25,10 @@ export default {
     monitors: {
       type: Array as PropType<Monitor[]>,
       required: true,
+    },
+    offset: {
+      type: Number,
+      default: 0,
     },
   },
   emits: ['edit', 'delete'],
