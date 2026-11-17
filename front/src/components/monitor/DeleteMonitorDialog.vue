@@ -23,11 +23,12 @@
       </header>
 
       <div class="flex-1 space-y-4 px-5 py-4">
-        <CameraFeed class="h-24" :noise="0.32">
-          <template #message>
-            <span class="text-[24px]">Desconectando…</span>
-          </template>
-        </CameraFeed>
+        <CameraFeed
+          class="h-24"
+          :noise="0.32"
+          message="Desconectando…"
+          message-class="text-[24px] text-foreground"
+        />
         <p id="delete-monitor-text" class="text-sm">
           Se borra <strong class="break-words">{{ monitor?.name }}</strong> con todo su historial de
           chequeos. No se puede deshacer.

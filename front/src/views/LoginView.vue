@@ -1,18 +1,15 @@
 <template>
   <section class="mx-auto max-w-110 space-y-5">
-    <CameraFeed class="h-42.5 sm:h-50">
-      <template #top-left>
-        <span class="rec-dot" aria-hidden="true" />
-        Cam 00 · Entrada
-      </template>
-      <template #top-right>{{ clock }}</template>
-      <template #message>
-        <h1 class="text-[40px] text-primary sm:text-[52px]">Projects Monitor</h1>
-        <p class="font-sans text-sm text-muted-foreground normal-case [text-shadow:none]">
-          Monitor de uptime del portfolio de Carlos Lagos
-        </p>
-      </template>
-    </CameraFeed>
+    <CameraFeed
+      class="h-42.5 sm:h-50"
+      rec="on"
+      label="Cam 00 · Entrada"
+      :stamp="clock"
+      message="Projects Monitor"
+      message-tag="h1"
+      message-class="text-[40px] text-primary sm:text-[52px]"
+      detail="Monitor de uptime del portfolio de Carlos Lagos"
+    />
 
     <InfoNotice v-if="exitReason" tag="Sesión vencida" tone="warning" role="alert">
       Tu sesión expiró. Volvé a entrar.

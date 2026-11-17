@@ -1,84 +1,86 @@
 <template>
-  <article class="panel flex h-full min-w-0 flex-col">
-    <header class="flex items-center gap-3 border-b border-border px-4 py-3">
-      <span class="cam-label shrink-0 text-muted-foreground">{{ camLabel }}</span>
-      <RouterLink
-        :to="{ name: 'monitor-detail', params: { id: monitor.id } }"
-        class="min-w-0 flex-1 truncate text-[17px] font-semibold underline decoration-border underline-offset-4 hover:decoration-primary"
-        @click="setCurrentCam(cam)"
-      >
-        {{ monitor.name }}
-      </RouterLink>
-      <StatusBadge :status="status" />
-    </header>
+  <article
+    class="panel flex h-full min-w-0 flex-col transition-colors has-[a:hover]:border-primary/60"
+  >
+    <RouterLink
+      :to="{ name: 'monitor-detail', params: { id: monitor.id } }"
+      :aria-label="`Ver el detalle de ${monitor.name}`"
+      class="flex min-w-0 flex-1 flex-col rounded-t-md"
+      @click="setCurrentCam(cam)"
+    >
+      <header class="flex items-center gap-3 border-b border-border px-4 py-3">
+        <span class="cam-label shrink-0 text-muted-foreground">{{ camLabel }}</span>
+        <span class="min-w-0 flex-1 truncate text-[17px] font-semibold">{{ monitor.name }}</span>
+        <StatusBadge :status="status" />
+      </header>
 
-    <div class="p-4 pb-0">
-      <CameraFeed class="h-37.5 min-[720px]:h-42.5" :noise="feedNoise">
-        <div v-if="monitor.recentChecks.length" class="absolute inset-x-3 top-9 bottom-9">
-          <MonitorSparkline :checks="monitor.recentChecks" />
-        </div>
-        <template #top-left>
-          <span :class="recording ? 'rec-dot' : 'rec-dot-off'" aria-hidden="true" />
-          {{ feedTag }}
-        </template>
-        <template v-if="monitor.lastCheck" #top-right>
-          {{ lastCheckStamp }}
-        </template>
-        <template #bottom-left>−24 H</template>
-        <template v-if="latencyText" #bottom-right>{{ latencyText }}</template>
-        <template v-if="feedMessage" #message>{{ feedMessage }}</template>
-      </CameraFeed>
-    </div>
+      <div v-if="showFeed" class="p-4 pb-0">
+        <CameraFeed
+          class="h-37.5 min-[720px]:h-42.5"
+          :noise="feedNoise"
+          :rec="recording ? 'on' : 'off'"
+          :label="feedTag"
+          :stamp="lastCheckStamp"
+          bottom-left="−24 H"
+          :bottom-right="latencyText"
+          :message="feedMessage"
+        >
+          <div v-if="monitor.recentChecks.length" class="absolute inset-x-3 top-9 bottom-9">
+            <MonitorSparkline :checks="monitor.recentChecks" />
+          </div>
+        </CameraFeed>
+      </div>
 
-    <div class="flex flex-1 flex-col gap-3 p-4">
-      <p class="truncate font-mono text-[13px] text-muted-foreground" :title="monitor.url">
-        {{ monitor.url }}
-      </p>
-      <div v-if="monitor.lastCheck" class="space-y-1 text-sm">
-        <p>
-          <span class="text-muted-foreground">Motivo ·</span>
-          {{ $t(`checkReason.${monitor.lastCheck.reason}`) }}
+      <div class="flex flex-1 flex-col gap-3 p-4">
+        <p class="truncate font-mono text-[13px] text-muted-foreground" :title="monitor.url">
+          {{ monitor.url }}
         </p>
-        <p v-if="hint" class="text-xs text-muted-foreground">{{ hint }}</p>
-      </div>
-      <p v-else class="text-sm text-muted-foreground">
-        Todavía no hay chequeos: el primero llega en menos de un minuto.
-      </p>
-
-      <div class="mt-auto flex flex-wrap items-end justify-between gap-3">
-        <UptimeBattery :percentage="monitor.uptime.percentage" :checks="monitor.uptime.checks" />
-        <div class="flex min-w-0 flex-col items-end gap-2">
-          <p v-if="monitor.lastCheck" class="text-xs text-muted-foreground">
-            Último chequeo: {{ lastCheckedText }}
+        <div v-if="monitor.lastCheck" class="space-y-1 text-sm">
+          <p>
+            <span class="text-muted-foreground">Motivo ·</span>
+            {{ $t(`checkReason.${monitor.lastCheck.reason}`) }}
           </p>
-          <ul class="flex flex-wrap justify-end gap-1.5">
-            <li v-if="!monitor.enabled" class="chip">
-              <Pause :size="12" aria-hidden="true" />
-              Pausado
-            </li>
-            <li v-if="canSetPublic && monitor.owned" class="chip">
-              <Globe v-if="monitor.isPublic" :size="12" aria-hidden="true" />
-              <Lock v-else :size="12" aria-hidden="true" />
-              {{ monitor.isPublic ? 'Público' : 'Privado' }}
-            </li>
-            <li v-if="isAdmin && !monitor.owned" class="chip">
-              <User :size="12" aria-hidden="true" />
-              De un invitado
-            </li>
-            <li v-if="!canManage" class="chip">Solo lectura</li>
-            <li v-if="expiresText" class="chip border-warning/60 text-warning">
-              <Clock :size="12" aria-hidden="true" />
-              {{ expiresText }}
-            </li>
-          </ul>
+          <p v-if="hint" class="text-xs text-muted-foreground">{{ hint }}</p>
         </div>
-      </div>
+        <p v-else class="text-sm text-muted-foreground">
+          Todavía no hay chequeos: el primero llega en menos de un minuto.
+        </p>
 
-      <p v-if="actionError" role="alert" class="field-error">
-        <CircleAlert :size="14" aria-hidden="true" />
-        {{ $t(actionError.key, actionError.params) }}
-      </p>
-    </div>
+        <div class="mt-auto flex flex-wrap items-end justify-between gap-3">
+          <UptimeBattery :percentage="monitor.uptime.percentage" :checks="monitor.uptime.checks" />
+          <div class="flex min-w-0 flex-col items-end gap-2">
+            <p v-if="monitor.lastCheck" class="text-xs text-muted-foreground">
+              Último chequeo: {{ lastCheckedText }}
+            </p>
+            <ul class="flex flex-wrap justify-end gap-1.5">
+              <li v-if="!monitor.enabled" class="chip">
+                <Pause :size="12" aria-hidden="true" />
+                Pausado
+              </li>
+              <li v-if="canSetPublic && monitor.owned" class="chip">
+                <Globe v-if="monitor.isPublic" :size="12" aria-hidden="true" />
+                <Lock v-else :size="12" aria-hidden="true" />
+                {{ monitor.isPublic ? 'Público' : 'Privado' }}
+              </li>
+              <li v-if="isAdmin && !monitor.owned" class="chip">
+                <User :size="12" aria-hidden="true" />
+                De un invitado
+              </li>
+              <li v-if="!canManage" class="chip">Solo lectura</li>
+              <li v-if="expiresText" class="chip border-warning/60 text-warning">
+                <Clock :size="12" aria-hidden="true" />
+                {{ expiresText }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <p v-if="actionError" role="alert" class="field-error">
+          <CircleAlert :size="14" aria-hidden="true" />
+          {{ $t(actionError.key, actionError.params) }}
+        </p>
+      </div>
+    </RouterLink>
 
     <footer v-if="canManage" class="flex gap-2 border-t border-border p-3">
       <CooldownButton
@@ -169,8 +171,12 @@ export default {
       type: Number as PropType<number | null>,
       default: null,
     },
+    showFeed: {
+      type: Boolean,
+      default: true,
+    },
   },
-  emits: ['edit', 'delete'],
+  emits: ['edit', 'delete', 'checked'],
   data(): MonitorCardData {
     return {
       now: Date.now(),
@@ -278,6 +284,7 @@ export default {
       this.checking = true
       try {
         await this.checkNow(this.monitor.id)
+        this.$emit('checked')
         this.startCooldown(this.limits?.manualCheckCooldownSeconds ?? 60)
       } catch (error) {
         this.handleError(error)

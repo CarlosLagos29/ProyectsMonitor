@@ -1,7 +1,7 @@
-import type { CheckResultDto } from './dto/check.dto'
+import type { CheckResultDto, CheckResultsResponseDto } from './dto/check.dto'
 import type { MonitorDto, MonitorListResponseDto } from './dto/monitor.dto'
 import { API_PREFIX, http } from './http'
-import { toCheckResult } from './mappers/check.mapper'
+import { toCheckResult, toCheckSeries } from './mappers/check.mapper'
 import {
   toCreateMonitorRequest,
   toMonitor,
@@ -11,6 +11,7 @@ import {
 } from './mappers/monitor.mapper'
 import type {
   CheckResult,
+  CheckSeries,
   Monitor,
   MonitorChanges,
   MonitorDraft,
@@ -59,4 +60,9 @@ export async function deleteMonitor(id: string): Promise<void> {
 export async function checkMonitor(id: string): Promise<CheckResult> {
   const { data } = await http.post<CheckResultDto>(`${monitorPath(id)}/check`)
   return toCheckResult(data)
+}
+
+export async function getResults(id: string): Promise<CheckSeries> {
+  const { data } = await http.get<CheckResultsResponseDto>(`${monitorPath(id)}/results`)
+  return toCheckSeries(data)
 }

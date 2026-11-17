@@ -34,6 +34,12 @@ export interface CheckResultDto extends LastCheckDto {
   redirects: number
 }
 
+export interface CheckResultsResponseDto {
+  from: string
+  to: string
+  results: CheckResultDto[]
+}
+
 export interface UptimeDto {
   percentage: number | null
   checks: number

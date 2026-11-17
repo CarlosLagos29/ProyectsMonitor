@@ -27,7 +27,7 @@
       stroke-linecap="round"
       vector-effect="non-scaling-stroke"
     />
-    <template v-else>
+    <g v-else>
       <line
         v-for="point in points"
         :key="`dot-${point.key}`"
@@ -40,7 +40,7 @@
         stroke-linecap="round"
         vector-effect="non-scaling-stroke"
       />
-    </template>
+    </g>
   </svg>
 </template>
 

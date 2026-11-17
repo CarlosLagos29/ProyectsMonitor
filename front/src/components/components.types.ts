@@ -43,3 +43,7 @@ export interface GuestShiftData {
   now: number
   ticker: ReturnType<typeof setInterval> | undefined
 }
+
+export interface ChecksTableData {
+  visibleRows: number
+}

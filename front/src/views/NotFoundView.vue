@@ -1,18 +1,16 @@
 <template>
   <section class="mx-auto max-w-190 space-y-6 py-6 text-center">
-    <CameraFeed class="h-75 sm:h-95" :noise="0.32">
-      <template #top-left>
-        <span class="rec-dot-off" aria-hidden="true" />
-        Cam ?? · Sin señal
-      </template>
-      <template #top-right>Err 404</template>
-      <template #message>
-        <h1 class="text-[44px] sm:text-[64px]">Cámara no encontrada</h1>
-        <p class="max-w-md font-sans text-base text-muted-foreground normal-case">
-          La página que buscás no existe o la cámara fue desinstalada.
-        </p>
-      </template>
-    </CameraFeed>
+    <CameraFeed
+      class="h-75 sm:h-95"
+      :noise="0.32"
+      rec="off"
+      label="Cam ?? · Sin señal"
+      stamp="Err 404"
+      message="Cámara no encontrada"
+      message-tag="h1"
+      message-class="text-[44px] text-foreground sm:text-[64px]"
+      detail="La página que buscás no existe o la cámara fue desinstalada."
+    />
     <RouterLink :to="{ name: 'home' }" class="btn btn-primary">
       <ArrowLeft :size="18" aria-hidden="true" />
       Volver a las cámaras

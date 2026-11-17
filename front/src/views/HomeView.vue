@@ -50,13 +50,13 @@
             <span class="h-5 flex-1 rounded bg-skeleton" />
             <span class="h-7 w-24 rounded bg-skeleton" />
           </div>
-          <CameraFeed class="h-37.5 min-[720px]:h-42.5" :noise="0.18">
-            <template #top-left>
-              <span class="rec-dot-off" aria-hidden="true" />
-              Conectando
-            </template>
-            <template #message>Conectando…</template>
-          </CameraFeed>
+          <CameraFeed
+            class="h-37.5 min-[720px]:h-42.5"
+            :noise="0.18"
+            rec="off"
+            label="Conectando"
+            message="Conectando…"
+          />
           <span class="block h-4 w-2/3 rounded bg-skeleton" />
           <span class="block h-4 w-1/2 rounded bg-skeleton" />
           <span class="mt-auto block h-11 w-full rounded bg-skeleton" />
@@ -64,13 +64,13 @@
       </div>
 
       <div v-else-if="error" class="panel flex flex-col gap-4 border-destructive p-4">
-        <CameraFeed class="min-h-50 flex-1" :noise="0.32">
-          <template #top-left>
-            <span class="rec-dot-off" aria-hidden="true" />
-            Sin señal
-          </template>
-          <template #message>Señal perdida</template>
-        </CameraFeed>
+        <CameraFeed
+          class="min-h-50 flex-1"
+          :noise="0.32"
+          rec="off"
+          label="Sin señal"
+          message="Señal perdida"
+        />
         <InfoNotice tag="Error" tone="destructive" role="alert">
           No pudimos cargar los monitores. {{ $t(error.key, error.params) }}
         </InfoNotice>
@@ -80,28 +80,27 @@
         </button>
       </div>
 
-      <CameraFeed v-else-if="!items.length" class="min-h-75" :noise="0.14">
-        <template #top-left>
-          <span class="rec-dot-off" aria-hidden="true" />
-          Cam -- · Libre
-        </template>
-        <template #message>
-          <p class="text-[32px]">No hay cámaras instaladas</p>
-          <p class="max-w-sm font-sans text-sm text-muted-foreground normal-case">
-            {{ emptyText }}
-          </p>
-          <button
-            v-if="activeScope === 'OWN'"
-            type="button"
-            class="btn btn-primary mt-3"
-            :disabled="!canCreate"
-            @click="openCreate"
-          >
-            <Plus :size="18" aria-hidden="true" />
-            Agregar monitor
-          </button>
-        </template>
-      </CameraFeed>
+      <div v-else-if="!items.length" class="flex flex-col gap-4">
+        <CameraFeed
+          class="min-h-75 flex-1"
+          :noise="0.14"
+          rec="off"
+          label="Cam -- · Libre"
+          message="No hay cámaras instaladas"
+          message-class="text-[32px] text-foreground"
+          :detail="emptyText"
+        />
+        <button
+          v-if="activeScope === 'OWN'"
+          type="button"
+          class="btn btn-primary self-center"
+          :disabled="!canCreate"
+          @click="openCreate"
+        >
+          <Plus :size="18" aria-hidden="true" />
+          Agregar monitor
+        </button>
+      </div>
 
       <div
         v-else-if="isGuest && activeScope === 'OWN' && ownMonitor"
