@@ -20,6 +20,7 @@ export interface StoredSession {
 export interface MonitorsState {
   items: Monitor[]
   scope: MonitorScope | null
+  currentCam: number | null
   page: PageInfo | null
   ownedCount: number
   loading: boolean

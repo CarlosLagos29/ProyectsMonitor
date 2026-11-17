@@ -19,11 +19,13 @@ export interface MonitorFormData {
   saving: boolean
   fieldErrors: Record<string, string>
   error: ErrorMessage | null
+  pressedBackdrop: boolean
 }
 
 export interface DeleteMonitorData {
   deleting: boolean
   error: ErrorMessage | null
+  pressedBackdrop: boolean
 }
 
 export interface SparkPoint {
@@ -31,5 +33,13 @@ export interface SparkPoint {
   x: number
   y: number
   status: HealthStatus
-  label: string
+}
+
+export interface StaticNoiseData {
+  filterId: string
+}
+
+export interface GuestShiftData {
+  now: number
+  ticker: ReturnType<typeof setInterval> | undefined
 }

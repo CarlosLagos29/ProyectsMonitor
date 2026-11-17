@@ -1,54 +1,61 @@
 <template>
-  <header class="flex items-center justify-between gap-4 border-b px-4 py-3">
-    <RouterLink :to="{ name: 'home' }" class="font-semibold">{{ $t('common.appName') }}</RouterLink>
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1" role="group" :aria-label="$t('common.language')">
+  <header class="border-b border-border bg-card">
+    <div class="mx-auto flex max-w-300 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
+      <RouterLink
+        :to="{ name: 'home' }"
+        class="flex min-h-11 items-center gap-2 font-cam text-[28px] leading-none text-foreground uppercase"
+      >
+        <Cctv :size="24" class="text-primary" aria-hidden="true" />
+        Projects Monitor
+      </RouterLink>
+      <p
+        v-if="cameras !== null"
+        class="hidden items-center gap-2 font-cam text-[20px] text-muted-foreground md:flex"
+      >
+        <span class="rec-dot" aria-hidden="true" />
+        En vivo · {{ cameras }} {{ cameras === 1 ? 'cámara' : 'cámaras' }}
+      </p>
+      <div class="ml-auto flex items-center gap-2">
+        <LanguageSwitch />
+        <span v-if="isActive" class="chip min-h-11 font-cam text-[18px] uppercase">
+          Turno: {{ isAdmin ? 'Admin' : 'Invitado' }}
+        </span>
         <button
-          v-for="code in locales"
-          :key="code"
+          v-if="isActive"
           type="button"
-          class="rounded px-2 py-1 text-sm"
-          :class="{ 'bg-gray-200 font-semibold': isCurrent(code) }"
-          :aria-pressed="isCurrent(code)"
-          @click="changeLocale(code)"
+          class="btn btn-secondary max-sm:size-11 max-sm:px-0"
+          aria-label="Salir"
+          @click="logout"
         >
-          {{ code.toUpperCase() }}
+          <LogOut :size="18" aria-hidden="true" />
+          <span class="max-sm:sr-only">Salir</span>
         </button>
       </div>
-      <template v-if="isActive">
-        <span class="text-sm">{{ isAdmin ? $t('header.roleAdmin') : $t('header.roleGuest') }}</span>
-        <button type="button" class="rounded border px-2 py-1 text-sm" @click="logout">
-          {{ $t('header.logout') }}
-        </button>
-      </template>
     </div>
   </header>
 </template>
 
 <script lang="ts">
+import { Cctv, LogOut } from 'lucide-vue-next'
 import { mapActions, mapState } from 'pinia'
 
-import { availableLocales, setLocale, type AppLocale } from '@/i18n'
+import { useMonitorsStore } from '@/stores/monitors'
 import { useSessionStore } from '@/stores/session'
+
+import LanguageSwitch from './LanguageSwitch.vue'
 
 export default {
   name: 'AppHeader',
-  data() {
-    return {
-      locales: availableLocales,
-    }
-  },
+  components: { Cctv, LanguageSwitch, LogOut },
   computed: {
     ...mapState(useSessionStore, ['isActive', 'isAdmin']),
+    ...mapState(useMonitorsStore, ['page']),
+    cameras(): number | null {
+      return this.$route.name === 'home' && this.page ? this.page.totalElements : null
+    },
   },
   methods: {
     ...mapActions(useSessionStore, ['logout']),
-    isCurrent(code: AppLocale): boolean {
-      return this.$i18n.locale === code
-    },
-    changeLocale(code: AppLocale) {
-      setLocale(code)
-    },
   },
 }
 </script>

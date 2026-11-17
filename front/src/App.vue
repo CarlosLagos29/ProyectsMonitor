@@ -1,8 +1,8 @@
 <template>
-  <AppHeader />
-  <main class="mx-auto w-full max-w-5xl space-y-4 p-4">
-    <InfoNotice v-if="!serverUp" :title="$t('serverWaking.title')" role="status">
-      <p>{{ $t('serverWaking.detail') }}</p>
+  <AppHeader v-if="showHeader" />
+  <main class="mx-auto w-full max-w-300 space-y-5 px-4 py-6">
+    <InfoNotice v-if="!serverUp" tag="Conectando cámaras…" tone="warning" dashed role="status">
+      El servidor está despertando (hosting gratuito, ~1 min). Podés seguir navegando.
     </InfoNotice>
     <RouterView />
   </main>
@@ -37,6 +37,9 @@ export default {
   },
   computed: {
     ...mapState(useSessionStore, ['isActive', 'limits']),
+    showHeader(): boolean {
+      return this.$route.name !== undefined && !this.$route.meta.public
+    },
   },
   watch: {
     isActive(active: boolean) {

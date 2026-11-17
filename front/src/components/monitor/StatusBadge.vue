@@ -1,6 +1,10 @@
 <template>
-  <span class="inline-block rounded px-2 py-0.5 text-xs font-semibold" :class="colorClass">
-    {{ status ? $t(`status.${status}`) : 'Sin chequeos' }}
+  <span
+    class="inline-flex shrink-0 items-center gap-1.5 rounded-[3px] border px-2 font-cam leading-none uppercase"
+    :class="[colorClass, small ? 'py-0.5 text-[18px]' : 'py-1 text-[20px]']"
+  >
+    <component :is="icon" :size="14" aria-hidden="true" />
+    {{ label }}
   </span>
 </template>
 
@@ -8,13 +12,7 @@
 import type { PropType } from 'vue'
 
 import type { HealthStatus } from '@/api/api.types'
-
-const COLORS: Record<HealthStatus, string> = {
-  UP: 'bg-green-100 text-green-800',
-  DOWN: 'bg-red-100 text-red-800',
-  BLOCKED: 'bg-amber-100 text-amber-800',
-  REJECTED: 'bg-gray-200 text-gray-800',
-}
+import { STATUS_ICON, STATUS_TEXT_CLASS, toStatusKey } from '@/utils/status'
 
 export default {
   name: 'StatusBadge',
@@ -23,10 +21,20 @@ export default {
       type: String as PropType<HealthStatus | null>,
       default: null,
     },
+    small: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     colorClass(): string {
-      return this.status ? COLORS[this.status] : 'bg-gray-100 text-gray-600'
+      return STATUS_TEXT_CLASS[toStatusKey(this.status)]
+    },
+    icon() {
+      return STATUS_ICON[toStatusKey(this.status)]
+    },
+    label(): string {
+      return this.status ? this.$t(`status.${this.status}`) : 'Sin chequeos'
     },
   },
 }

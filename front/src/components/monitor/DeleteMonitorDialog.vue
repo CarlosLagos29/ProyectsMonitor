@@ -1,46 +1,73 @@
 <template>
-  <dialog ref="dialog" class="m-auto w-full max-w-sm rounded border p-4" @close="$emit('close')">
-    <div class="space-y-3">
-      <h2 class="text-lg font-semibold">Borrar monitor</h2>
-      <p class="text-sm">
-        ¿Seguro que querés borrar <strong>{{ monitor?.name }}</strong
-        >? Se borra también todo su historial.
-      </p>
-      <p v-if="monitor && !monitor.owned" class="text-sm">
-        Es el monitor de un invitado: lo pierde junto con su historial y no se puede deshacer.
-      </p>
-      <p v-if="error" role="alert" class="text-sm text-red-600">
-        {{ $t(error.key, error.params) }}
-      </p>
-      <div class="flex justify-end gap-2">
-        <button type="button" class="rounded border px-3 py-1" @click="$emit('close')">
-          Cancelar
-        </button>
+  <dialog
+    ref="dialog"
+    class="dialog border-destructive"
+    role="alertdialog"
+    aria-labelledby="delete-monitor-title"
+    aria-describedby="delete-monitor-text"
+    @close="$emit('close')"
+    @pointerdown.self="pressedBackdrop = true"
+    @click.self="onBackdropClick"
+  >
+    <div class="flex h-full flex-col">
+      <header class="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+        <h2 id="delete-monitor-title" class="dialog-title">¿Desinstalar cámara?</h2>
         <button
           type="button"
-          class="rounded border border-red-600 px-3 py-1 text-red-700"
-          :disabled="deleting"
-          @click="confirm"
+          class="w-4.5 btn btn-secondary btn-icon border-transparent"
+          aria-label="Cerrar"
+          @click="$emit('close')"
         >
+          <X :size="18" aria-hidden="true" />
+        </button>
+      </header>
+
+      <div class="flex-1 space-y-4 px-5 py-4">
+        <CameraFeed class="h-24" :noise="0.32">
+          <template #message>
+            <span class="text-[24px]">Desconectando…</span>
+          </template>
+        </CameraFeed>
+        <p id="delete-monitor-text" class="text-sm">
+          Se borra <strong class="break-words">{{ monitor?.name }}</strong> con todo su historial de
+          chequeos. No se puede deshacer.
+        </p>
+        <InfoNotice v-if="isGuestMonitor" tag="Invitado" tone="warning">
+          Es el monitor de un invitado: desaparece también de su sesión{{ guestRemainingText }}.
+        </InfoNotice>
+        <InfoNotice v-if="error" tag="Error" tone="destructive" role="alert">
+          {{ $t(error.key, error.params) }}
+        </InfoNotice>
+      </div>
+
+      <footer class="flex justify-end gap-2 border-t border-border px-5 py-3">
+        <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancelar</button>
+        <button type="button" class="btn btn-danger-solid" :disabled="deleting" @click="confirm">
+          <Trash2 :size="18" aria-hidden="true" />
           {{ deleting ? 'Borrando…' : 'Borrar' }}
         </button>
-      </div>
+      </footer>
     </div>
   </dialog>
 </template>
 
 <script lang="ts">
 import type { PropType } from 'vue'
+import { Trash2, X } from 'lucide-vue-next'
 import { mapActions } from 'pinia'
 
 import type { Monitor } from '@/api/api.types'
 import { describeError } from '@/api/errors'
+import CameraFeed from '@/components/layout/CameraFeed.vue'
+import InfoNotice from '@/components/layout/InfoNotice.vue'
 import { useMonitorsStore } from '@/stores/monitors'
+import { formatHoursMinutes } from '@/utils/time'
 
 import type { DeleteMonitorData } from '../components.types'
 
 export default {
   name: 'DeleteMonitorDialog',
+  components: { CameraFeed, InfoNotice, Trash2, X },
   props: {
     open: {
       type: Boolean,
@@ -56,7 +83,20 @@ export default {
     return {
       deleting: false,
       error: null,
+      pressedBackdrop: false,
     }
+  },
+  computed: {
+    isGuestMonitor(): boolean {
+      return this.monitor !== null && !this.monitor.owned
+    },
+    guestRemainingText(): string {
+      const expiresAt = this.monitor?.expiresAt
+      if (!expiresAt) {
+        return ''
+      }
+      return `, aunque le queden ${formatHoursMinutes(expiresAt.getTime() - Date.now())} h`
+    },
   },
   watch: {
     open(isOpen: boolean) {
@@ -75,6 +115,12 @@ export default {
   },
   methods: {
     ...mapActions(useMonitorsStore, ['remove']),
+    onBackdropClick() {
+      if (this.pressedBackdrop && !this.deleting) {
+        this.$emit('close')
+      }
+      this.pressedBackdrop = false
+    },
     async confirm() {
       if (!this.monitor) {
         return
