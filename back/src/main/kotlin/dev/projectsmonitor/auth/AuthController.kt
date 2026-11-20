@@ -3,7 +3,6 @@ package dev.projectsmonitor.auth
 import dev.projectsmonitor.auth.dto.LoginRequest
 import dev.projectsmonitor.auth.dto.MeResponse
 import dev.projectsmonitor.auth.dto.TokenResponse
-import dev.projectsmonitor.auth.mapper.AuthMapper
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
@@ -30,21 +29,17 @@ class AuthController(private val authService: AuthService) {
     @LoginDocs
     fun login(@Valid @RequestBody request: LoginRequest, httpRequest: HttpServletRequest): TokenResponse {
         LOG.info("Admin login requested")
-        val issued = authService.login(request.email, request.password, httpRequest.remoteAddr)
-        LOG.info("Admin token issued: expiresAt={}", issued.user.expiresAt)
-        return AuthMapper.toTokenResponse(issued)
+        return authService.login(request.email, request.password, httpRequest.remoteAddr)
     }
 
     @PostMapping("/guest")
     @GuestTokenDocs
     fun guest(httpRequest: HttpServletRequest): TokenResponse {
         LOG.info("Guest token requested")
-        val issued = authService.issueGuestToken(httpRequest.remoteAddr)
-        LOG.info("Guest token issued: guest={} expiresAt={}", issued.user.id, issued.user.expiresAt)
-        return AuthMapper.toTokenResponse(issued)
+        return authService.issueGuestToken(httpRequest.remoteAddr)
     }
 
     @GetMapping("/me")
     @MeDocs
-    fun me(user: CurrentUser): MeResponse = AuthMapper.toMeResponse(user, authService.limits)
+    fun me(user: CurrentUser): MeResponse = authService.me(user)
 }

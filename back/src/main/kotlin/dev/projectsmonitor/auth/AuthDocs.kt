@@ -2,6 +2,9 @@ package dev.projectsmonitor.auth
 
 import dev.projectsmonitor.auth.dto.MeResponse
 import dev.projectsmonitor.auth.dto.TokenResponse
+import dev.projectsmonitor.common.GuestRateLimitDoc
+import dev.projectsmonitor.common.PROBLEM_JSON
+import dev.projectsmonitor.common.SessionExpiredDoc
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -38,13 +41,13 @@ annotation class LoginDocs
 @ApiResponse(
     responseCode = "401",
     description = "Missing or wrong API token (reason INVALID_API_TOKEN).",
-    content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
     responseCode = "429",
     description = "Too many guest tokens from this IP (reason RATE_LIMITED). The Retry-After header says how many " +
         "seconds to wait.",
-    content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
 annotation class GuestTokenDocs
 
@@ -69,11 +72,8 @@ annotation class GuestTokenDocs
         ),
     ],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
+@GuestRateLimitDoc
 annotation class MeDocs
 
 private const val GUEST_TOKEN_EXAMPLE = """

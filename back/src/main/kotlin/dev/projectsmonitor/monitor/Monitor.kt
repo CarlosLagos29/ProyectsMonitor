@@ -44,7 +44,7 @@ class Monitor(
     var enabled: Boolean = true,
 
     @Column(name = "next_check_at", nullable = false)
-    var nextCheckAt: Instant = Instant.now(),
+    var nextCheckAt: Instant,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "last_status", length = 16)
@@ -64,8 +64,8 @@ class Monitor(
     var lastCheckedAt: Instant? = null,
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: Instant = Instant.now(),
+    val createdAt: Instant,
 
     @Column(name = "updated_at", nullable = false)
-    var updatedAt: Instant = Instant.now(),
+    var updatedAt: Instant,
 )

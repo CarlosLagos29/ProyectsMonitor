@@ -1,5 +1,6 @@
 package dev.projectsmonitor.scheduler
 
+import dev.projectsmonitor.common.nowMillis
 import dev.projectsmonitor.common.toLogSafe
 import dev.projectsmonitor.config.AppProperties
 import dev.projectsmonitor.monitor.Monitor
@@ -11,8 +12,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -43,7 +42,9 @@ class CheckScheduler(
         val groups = due.groupBy { it.url }.values
         val postponed = pool.invokeAll(groups.map { Callable { checkGroup(it) } }).flatMap { it.get() }
         if (postponed.isNotEmpty()) {
-            transactionTemplate.executeWithoutResult { monitorRepository.reschedule(postponed.map { it.id }, now()) }
+            transactionTemplate.executeWithoutResult {
+                monitorRepository.reschedule(postponed.map { it.id }, nowMillis())
+            }
         }
         LOG.info("Tick done: due={} urls={} postponed={}", due.size, groups.size, postponed.size)
     }
@@ -54,7 +55,7 @@ class CheckScheduler(
     }
 
     private fun claimDue(): List<Monitor> = transactionTemplate.execute {
-        val now = now()
+        val now = nowMillis()
         monitorRepository.findDueForUpdate(now, BATCH_SIZE).onEach { it.nextCheckAt = now.plus(checkInterval) }
     }.orEmpty()
 
@@ -64,6 +65,4 @@ class CheckScheduler(
         LOG.error("Scheduled check failed: url={}", group.first().url.toLogSafe(), e)
         emptyList()
     }
-
-    private fun now(): Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
 }

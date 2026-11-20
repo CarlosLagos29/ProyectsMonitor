@@ -26,10 +26,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(ApiException::class)
     fun handleApiException(ex: ApiException): ResponseEntity<ProblemDetail> {
         LOG.warn("Request refused: status={} reason={} detail={}", ex.status.value(), ex.reason, ex.message.toLogSafe())
-        val body = ProblemDetail.forStatusAndDetail(ex.status, ex.message).apply {
-            title = ex.status.reasonPhrase
-            setProperty("reason", ex.reason)
-        }
+        val body = problem(ex.status, ex.reason, ex.message)
         val response = ResponseEntity.status(ex.status)
         ex.retryAfter?.let { response.header(HttpHeaders.RETRY_AFTER, it.toRetryAfterSeconds().toString()) }
         return response.body(body)
@@ -65,9 +62,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest,
     ): ResponseEntity<Any>? {
         LOG.warn("Malformed path or parameter: {}", ex.propertyName)
-        val body = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found").apply {
-            setProperty("reason", ApiErrorReason.NOT_FOUND)
-        }
+        val body = problem(HttpStatus.NOT_FOUND, ApiErrorReason.NOT_FOUND, "Resource not found")
         return handleExceptionInternal(ex, body, headers, HttpStatus.NOT_FOUND, request)
     }
 
@@ -78,9 +73,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest,
     ): ResponseEntity<Any>? {
         LOG.warn("Unreadable request body")
-        val body = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Unreadable request body").apply {
-            setProperty("reason", ApiErrorReason.VALIDATION_ERROR)
-        }
+        val body = problem(HttpStatus.BAD_REQUEST, ApiErrorReason.VALIDATION_ERROR, "Unreadable request body")
         return handleExceptionInternal(ex, body, headers, status, request)
     }
 }

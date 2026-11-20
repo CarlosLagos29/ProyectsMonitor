@@ -1,7 +1,9 @@
 package dev.projectsmonitor.auth
 
+import dev.projectsmonitor.auth.dto.MeResponse
+import dev.projectsmonitor.auth.dto.TokenResponse
+import dev.projectsmonitor.auth.mapper.AuthMapper
 import dev.projectsmonitor.auth.token.AdminSession
-import dev.projectsmonitor.auth.token.IssuedToken
 import dev.projectsmonitor.auth.token.JwtService
 import dev.projectsmonitor.common.toLogSafe
 import dev.projectsmonitor.config.AppProperties
@@ -29,21 +31,24 @@ class AuthService(
 
     private val guestTokenLimiter = KeyedRateLimiter("guest-token", properties.authRateLimit.guestToken)
 
-    val limits: AppProperties.Limits get() = properties.limits
-
-    fun login(email: String, password: String, clientIp: String): IssuedToken {
+    fun login(email: String, password: String, clientIp: String): TokenResponse {
         if (!credentialsMatch(email, password)) {
             LOG.warn("Failed admin login: ip={}", clientIp.toLogSafe())
             throw ApiException(HttpStatus.UNAUTHORIZED, ApiErrorReason.INVALID_CREDENTIALS, "Invalid email or password")
         }
-        LOG.info("Admin logged in: ip={}", clientIp.toLogSafe())
-        return jwtService.issue(CurrentUser.ADMIN_ID, Role.ADMIN, adminSession.start())
+        val issued = jwtService.issue(CurrentUser.ADMIN_ID, Role.ADMIN, adminSession.start())
+        LOG.info("Admin logged in: ip={} expiresAt={}", clientIp.toLogSafe(), issued.user.expiresAt)
+        return AuthMapper.toToken(issued)
     }
 
-    fun issueGuestToken(clientIp: String): IssuedToken {
+    fun issueGuestToken(clientIp: String): TokenResponse {
         guestTokenLimiter.acquire(clientIp)
-        return jwtService.issue(UUID.randomUUID().toString(), Role.GUEST)
+        val issued = jwtService.issue(UUID.randomUUID().toString(), Role.GUEST)
+        LOG.info("Guest token issued: guest={} expiresAt={}", issued.user.id, issued.user.expiresAt)
+        return AuthMapper.toToken(issued)
     }
+
+    fun me(user: CurrentUser): MeResponse = AuthMapper.toMe(user, properties.limits)
 
     private fun credentialsMatch(email: String, password: String): Boolean {
         val emailMatches = constantTimeEquals(email.trim().lowercase(), properties.admin.email.trim().lowercase())
