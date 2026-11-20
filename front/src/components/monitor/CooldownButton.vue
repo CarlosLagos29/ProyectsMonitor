@@ -34,12 +34,12 @@ export default {
     },
     text(): string {
       if (this.checking) {
-        return 'Chequeando…'
+        return this.$t('monitor.check.running')
       }
       if (this.waiting) {
-        return `Reintentar en ${this.cooldownSeconds} s`
+        return this.$t('monitor.check.retryIn', { seconds: this.cooldownSeconds })
       }
-      return 'Chequear ahora'
+      return this.$t('monitor.check.now')
     },
   },
 }

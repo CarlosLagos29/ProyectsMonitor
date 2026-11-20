@@ -1,7 +1,6 @@
-import type { LimitsDto, RoleDto, UserDto } from './dto/auth.dto'
+import type { LimitsDto, UserDto } from './dto/auth.dto'
 import type { HealthReasonDto, HealthStatusDto, UptimeDto } from './dto/check.dto'
 
-export type Role = RoleDto
 export type User = UserDto
 export type Limits = LimitsDto
 

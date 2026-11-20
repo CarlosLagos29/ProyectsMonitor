@@ -14,7 +14,7 @@ import {
 import { useSessionStore } from './session'
 import type { MonitorsState } from './stores.types'
 
-export const PAGE_SIZE = 10
+export const PAGE_SIZE = 6
 export const RECENT_CHECKS_MAX = 24
 
 let lastRequest = 0

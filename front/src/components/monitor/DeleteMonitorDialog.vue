@@ -11,11 +11,11 @@
   >
     <div class="flex h-full flex-col">
       <header class="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
-        <h2 id="delete-monitor-title" class="dialog-title">¿Desinstalar cámara?</h2>
+        <h2 id="delete-monitor-title" class="dialog-title">{{ $t('monitor.delete.title') }}</h2>
         <button
           type="button"
           class="w-4.5 btn btn-secondary btn-icon border-transparent"
-          aria-label="Cerrar"
+          :aria-label="$t('common.close')"
           @click="$emit('close')"
         >
           <X :size="18" aria-hidden="true" />
@@ -26,26 +26,27 @@
         <CameraFeed
           class="h-24"
           :noise="0.32"
-          message="Desconectando…"
+          :message="$t('monitor.delete.disconnecting')"
           message-class="text-[24px] text-foreground"
         />
         <p id="delete-monitor-text" class="text-sm">
-          Se borra <strong class="break-words">{{ monitor?.name }}</strong> con todo su historial de
-          chequeos. No se puede deshacer.
+          {{ $t('monitor.delete.text', { name: monitor?.name }) }}
         </p>
-        <InfoNotice v-if="isGuestMonitor" tag="Invitado" tone="warning">
-          Es el monitor de un invitado: desaparece también de su sesión{{ guestRemainingText }}.
+        <InfoNotice v-if="isGuestMonitor" :tag="$t('monitor.delete.guestTag')" tone="warning">
+          {{ guestText }}
         </InfoNotice>
-        <InfoNotice v-if="error" tag="Error" tone="destructive" role="alert">
+        <InfoNotice v-if="error" :tag="$t('common.error')" tone="destructive" role="alert">
           {{ $t(error.key, error.params) }}
         </InfoNotice>
       </div>
 
       <footer class="flex justify-end gap-2 border-t border-border px-5 py-3">
-        <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancelar</button>
+        <button type="button" class="btn btn-secondary" @click="$emit('close')">
+          {{ $t('common.cancel') }}
+        </button>
         <button type="button" class="btn btn-danger-solid" :disabled="deleting" @click="confirm">
           <Trash2 :size="18" aria-hidden="true" />
-          {{ deleting ? 'Borrando…' : 'Borrar' }}
+          {{ deleting ? $t('monitor.delete.deleting') : $t('common.delete') }}
         </button>
       </footer>
     </div>
@@ -91,12 +92,14 @@ export default {
     isGuestMonitor(): boolean {
       return this.monitor !== null && !this.monitor.owned
     },
-    guestRemainingText(): string {
+    guestText(): string {
       const expiresAt = this.monitor?.expiresAt
       if (!expiresAt) {
-        return ''
+        return this.$t('monitor.delete.guest')
       }
-      return `, aunque le queden ${formatHoursMinutes(expiresAt.getTime() - Date.now())} h`
+      return this.$t('monitor.delete.guestRemaining', {
+        time: formatHoursMinutes(expiresAt.getTime() - Date.now()),
+      })
     },
   },
   watch: {

@@ -160,7 +160,11 @@ export default {
       const count = this.results.length
       const downs = this.results.filter((result) => result.status === 'DOWN').length
       const blocked = this.results.filter((result) => result.status === 'BLOCKED').length
-      return `Latencia de las últimas 24 h: ${count} ${count === 1 ? 'chequeo' : 'chequeos'}, ${downs} ${downs === 1 ? 'caído' : 'caídos'} y ${blocked} ${blocked === 1 ? 'bloqueado' : 'bloqueados'}`
+      return this.$t('monitorDetail.chartSummary', {
+        checks: this.$t('monitor.uptime.checks', count),
+        downs: this.$t('monitorDetail.downs', downs),
+        blocked: this.$t('monitorDetail.blocked', blocked),
+      })
     },
   },
   methods: {

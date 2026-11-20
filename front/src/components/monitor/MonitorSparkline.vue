@@ -108,11 +108,7 @@ export default {
     summary(): string {
       const downs = this.checks.filter((check) => check.status === 'DOWN').length
       const count = this.checks.length
-      const base = `Latencia de ${count === 1 ? 'el último chequeo' : `los últimos ${count} chequeos`}`
-      if (!downs) {
-        return `${base}, sin caídas`
-      }
-      return `${base}, con ${downs} ${downs === 1 ? 'caída' : 'caídas'}`
+      return `${this.$t('monitor.sparkline.latency', count)}, ${this.$t('monitor.sparkline.downs', downs)}`
     },
   },
 }

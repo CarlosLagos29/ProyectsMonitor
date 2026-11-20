@@ -4,7 +4,7 @@
   >
     <RouterLink
       :to="{ name: 'monitor-detail', params: { id: monitor.id } }"
-      :aria-label="`Ver el detalle de ${monitor.name}`"
+      :aria-label="$t('monitor.card.details', { name: monitor.name })"
       class="flex min-w-0 flex-1 flex-col rounded-t-md"
       @click="setCurrentCam(cam)"
     >
@@ -37,36 +37,36 @@
         </p>
         <div v-if="monitor.lastCheck" class="space-y-1 text-sm">
           <p>
-            <span class="text-muted-foreground">Motivo ·</span>
+            <span class="text-muted-foreground">{{ $t('monitor.card.reason') }} ·</span>
             {{ $t(`checkReason.${monitor.lastCheck.reason}`) }}
           </p>
           <p v-if="hint" class="text-xs text-muted-foreground">{{ hint }}</p>
         </div>
         <p v-else class="text-sm text-muted-foreground">
-          Todavía no hay chequeos: el primero llega en menos de un minuto.
+          {{ $t('monitor.card.waiting') }}
         </p>
 
         <div class="mt-auto flex flex-wrap items-end justify-between gap-3">
           <UptimeBattery :percentage="monitor.uptime.percentage" :checks="monitor.uptime.checks" />
           <div class="flex min-w-0 flex-col items-end gap-2">
             <p v-if="monitor.lastCheck" class="text-xs text-muted-foreground">
-              Último chequeo: {{ lastCheckedText }}
+              {{ $t('monitor.card.lastCheck', { time: lastCheckedText }) }}
             </p>
             <ul class="flex flex-wrap justify-end gap-1.5">
               <li v-if="!monitor.enabled" class="chip">
                 <Pause :size="12" aria-hidden="true" />
-                Pausado
+                {{ $t('monitor.card.paused') }}
               </li>
               <li v-if="canSetPublic && monitor.owned" class="chip">
                 <Globe v-if="monitor.isPublic" :size="12" aria-hidden="true" />
                 <Lock v-else :size="12" aria-hidden="true" />
-                {{ monitor.isPublic ? 'Público' : 'Privado' }}
+                {{ monitor.isPublic ? $t('monitor.card.public') : $t('monitor.card.private') }}
               </li>
               <li v-if="isAdmin && !monitor.owned" class="chip">
                 <User :size="12" aria-hidden="true" />
-                De un invitado
+                {{ $t('monitor.card.fromGuest') }}
               </li>
-              <li v-if="!canManage" class="chip">Solo lectura</li>
+              <li v-if="!canManage" class="chip">{{ $t('monitor.card.readOnly') }}</li>
               <li v-if="expiresText" class="chip border-warning/60 text-warning">
                 <Clock :size="12" aria-hidden="true" />
                 {{ expiresText }}
@@ -92,8 +92,8 @@
       <button
         type="button"
         class="btn btn-secondary btn-icon"
-        :aria-label="monitor.enabled ? 'Pausar' : 'Reanudar'"
-        :title="monitor.enabled ? 'Pausar' : 'Reanudar'"
+        :aria-label="toggleText"
+        :title="toggleText"
         :disabled="toggling"
         @click="toggleEnabled"
       >
@@ -103,8 +103,8 @@
       <button
         type="button"
         class="btn btn-secondary btn-icon"
-        aria-label="Editar"
-        title="Editar"
+        :aria-label="$t('monitor.card.edit')"
+        :title="$t('monitor.card.edit')"
         @click="$emit('edit', monitor)"
       >
         <Pencil :size="18" aria-hidden="true" />
@@ -112,8 +112,8 @@
       <button
         type="button"
         class="btn btn-danger btn-icon"
-        aria-label="Borrar"
-        title="Borrar"
+        :aria-label="$t('common.delete')"
+        :title="$t('common.delete')"
         @click="$emit('delete', monitor)"
       >
         <Trash2 :size="18" aria-hidden="true" />
@@ -204,22 +204,22 @@ export default {
     },
     feedTag(): string {
       if (this.status === 'REJECTED') {
-        return 'Sin acceso'
+        return this.$t('common.feed.noAccess')
       }
       if (this.status === null) {
-        return 'Conectando'
+        return this.$t('common.feed.connecting')
       }
       return 'REC'
     },
     feedMessage(): string {
       if (this.status === 'DOWN') {
-        return 'Señal perdida'
+        return this.$t('common.feed.signalLost')
       }
       if (this.status === 'REJECTED') {
-        return 'Acceso denegado'
+        return this.$t('common.feed.accessDenied')
       }
       if (this.status === null) {
-        return 'Conectando…'
+        return this.$t('common.feed.connectingMessage')
       }
       return ''
     },
@@ -247,10 +247,10 @@ export default {
     },
     hint(): string {
       if (this.monitor.lastCheck?.reason === 'TIMEOUT') {
-        return 'Puede ser una app dormida en un hosting gratuito: tarda en despertar.'
+        return this.$t('monitor.card.hintTimeout')
       }
       if (this.status === 'BLOCKED') {
-        return 'El sitio no deja pasar al checker, así que no se sabe si está sano.'
+        return this.$t('monitor.card.hintBlocked')
       }
       return ''
     },
@@ -258,7 +258,12 @@ export default {
       if (!this.monitor.expiresAt) {
         return ''
       }
-      return `Se borra en ${formatRemaining(this.monitor.expiresAt.getTime() - this.now)}`
+      return this.$t('monitor.card.expires', {
+        time: formatRemaining(this.monitor.expiresAt.getTime() - this.now),
+      })
+    },
+    toggleText(): string {
+      return this.monitor.enabled ? this.$t('monitor.card.pause') : this.$t('monitor.card.resume')
     },
     cooldownSeconds(): number {
       return Math.max(0, Math.ceil((this.cooldownUntil - this.now) / 1_000))

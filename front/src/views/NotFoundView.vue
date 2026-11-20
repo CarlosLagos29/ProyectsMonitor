@@ -4,16 +4,16 @@
       class="h-75 sm:h-95"
       :noise="0.32"
       rec="off"
-      label="Cam ?? · Sin señal"
+      :label="`Cam ?? · ${$t('monitorDetail.notFound.label')}`"
       stamp="Err 404"
-      message="Cámara no encontrada"
+      :message="$t('monitorDetail.notFound.title')"
       message-tag="h1"
       message-class="text-[44px] text-foreground sm:text-[64px]"
-      detail="La página que buscás no existe o la cámara fue desinstalada."
+      :detail="$t('monitorDetail.notFound.detail')"
     />
     <RouterLink :to="{ name: 'home' }" class="btn btn-primary">
       <ArrowLeft :size="18" aria-hidden="true" />
-      Volver a las cámaras
+      {{ $t('monitorDetail.back') }}
     </RouterLink>
   </section>
 </template>
