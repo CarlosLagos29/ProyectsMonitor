@@ -1,4 +1,29 @@
-export const homeEn = {}
+export const homeEn = {
+  noticeTag: 'Notice',
+  demo: "You're in demo mode.",
+  demoDetail: 'Whatever you create as a guest is temporary and gets deleted after {hours} h',
+  add: 'Add monitor',
+  tabsLabel: 'Monitor lists',
+  tabs: {
+    public: 'Public',
+    guestOwn: 'My monitor',
+  },
+  public: {
+    title: 'Public monitors',
+    empty: 'There are no public monitors yet.',
+  },
+  guestOwn: {
+    title: 'My monitor',
+    subtitle: 'Try one of your own URLs: it gets checked every {minutes} minutes.',
+    empty: 'Add a URL to see how it works. It gets deleted after {hours} h.',
+  },
+  empty: 'No cameras installed',
+  loadError: "We couldn't load the monitors.",
+  pagesLabel: 'Monitor pages',
+  previous: 'Previous',
+  next: 'Next',
+  page: 'Page {current} of {total}',
+}
 
 export const homeEs = {
   noticeTag: 'Aviso',
@@ -24,7 +49,7 @@ export const homeEs = {
   adminOwn: {
     title: 'Mis monitores',
     subtitle: 'Todos tus monitores, públicos y privados.',
-    empty: 'Agregá el primer proyecto para empezar a vigilarlo.',
+    empty: 'Agregá el primer proyecto para comenzar a vigilarlo.',
   },
   guests: {
     title: 'Monitores de invitados',

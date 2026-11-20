@@ -26,9 +26,6 @@
     <p class="text-sm">
       {{ $t('monitor.shift.lifetime', { created: createdText, expires: expiresText }) }}
     </p>
-    <p class="text-sm text-muted-foreground">
-      {{ $t('monitor.shift.deleteHint') }}
-    </p>
   </aside>
 </template>
 

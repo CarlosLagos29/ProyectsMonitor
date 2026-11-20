@@ -8,6 +8,14 @@ export const commonEn = {
   delete: 'Delete',
   close: 'Close',
   error: 'Error',
+  feed: {
+    connecting: 'Connecting',
+    connectingMessage: 'Connecting…',
+    noSignal: 'No signal',
+    signalLost: 'Signal lost',
+    noAccess: 'No access',
+    accessDenied: 'Access denied',
+  },
 }
 
 export const commonEs = {

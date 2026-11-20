@@ -76,7 +76,6 @@
           id="monitor-enabled"
           v-model="enabled"
           :label="$t('monitor.form.enabled')"
-          :help="$t('monitor.form.enabledHelp', { minutes: 10 })"
         />
         <ToggleSwitch
           v-if="showPublic"
