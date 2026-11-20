@@ -65,16 +65,16 @@ export default {
       return `${formatted}%`
     },
     detailText(): string {
-      if (!this.hasData) {
-        return 'uptime 24 h · sin chequeos'
-      }
-      return `uptime 24 h · ${this.checks} ${this.checks === 1 ? 'chequeo' : 'chequeos'}`
+      return `uptime 24 h · ${this.checksText}`
+    },
+    checksText(): string {
+      return this.$t('monitor.uptime.checks', this.hasData ? this.checks : 0)
     },
     ariaLabel(): string {
       if (!this.hasData) {
-        return 'Uptime de las últimas 24 h: sin chequeos todavía'
+        return this.$t('monitor.uptime.empty')
       }
-      return `Uptime de las últimas 24 h: ${this.valueText}, basado en ${this.checks} ${this.checks === 1 ? 'chequeo' : 'chequeos'}`
+      return this.$t('monitor.uptime.label', { value: this.valueText, checks: this.checksText })
     },
   },
 }

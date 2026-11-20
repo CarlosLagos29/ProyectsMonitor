@@ -1,11 +1,9 @@
-export const headerEn = {
-  roleAdmin: 'Admin',
-  roleGuest: 'Guest',
-  logout: 'Sign out',
-}
+export const headerEn = {}
 
 export const headerEs = {
-  roleAdmin: 'Admin',
-  roleGuest: 'Invitado',
+  cameras: '{n} cámara | {n} cámaras',
+  shift: 'Turno: {role}',
+  admin: 'Admin',
+  guest: 'Invitado',
   logout: 'Salir',
 }

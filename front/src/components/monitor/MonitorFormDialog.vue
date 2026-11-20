@@ -13,7 +13,7 @@
         <button
           type="button"
           class="w-4.5 btn btn-secondary btn-icon border-transparent"
-          aria-label="Cerrar"
+          :aria-label="$t('common.close')"
           @click="close"
         >
           <X :size="18" aria-hidden="true" />
@@ -22,7 +22,9 @@
 
       <div class="flex-1 space-y-4 px-5 py-4">
         <div class="space-y-1">
-          <label for="monitor-name" class="text-sm font-medium">Nombre</label>
+          <label for="monitor-name" class="text-sm font-medium">{{
+            $t('monitor.form.name')
+          }}</label>
           <input
             id="monitor-name"
             v-model="name"
@@ -39,14 +41,14 @@
         </div>
 
         <div class="space-y-1">
-          <label for="monitor-url" class="text-sm font-medium">URL</label>
+          <label for="monitor-url" class="text-sm font-medium">{{ $t('monitor.form.url') }}</label>
           <div class="relative">
             <input
               id="monitor-url"
               v-model="url"
               type="url"
               maxlength="2048"
-              placeholder="https://ejemplo.com"
+              :placeholder="$t('monitor.form.urlPlaceholder')"
               class="field font-mono text-sm"
               :class="{ 'pr-10': isEdit }"
               :disabled="isEdit"
@@ -61,7 +63,7 @@
             />
           </div>
           <p v-if="isEdit" id="monitor-url-help" class="text-xs text-muted-foreground">
-            La URL no se puede cambiar. Para otra URL, creá una cámara nueva.
+            {{ $t('monitor.form.urlLocked') }}
           </p>
           <p v-if="urlError" id="monitor-url-error" class="field-error">
             <CircleAlert :size="14" aria-hidden="true" />
@@ -73,24 +75,26 @@
           v-if="isEdit"
           id="monitor-enabled"
           v-model="enabled"
-          label="Activo"
-          help="Se chequea cada 10 minutos."
+          :label="$t('monitor.form.enabled')"
+          :help="$t('monitor.form.enabledHelp', { minutes: 10 })"
         />
         <ToggleSwitch
           v-if="showPublic"
           id="monitor-public"
           v-model="isPublic"
-          label="Público"
-          help="Lo ven todos los invitados."
+          :label="$t('monitor.form.public')"
+          :help="$t('monitor.form.publicHelp')"
         />
 
-        <InfoNotice v-if="error" tag="Error" tone="destructive" role="alert">
+        <InfoNotice v-if="error" :tag="$t('common.error')" tone="destructive" role="alert">
           {{ $t(error.key, error.params) }}
         </InfoNotice>
       </div>
 
       <footer class="flex justify-end gap-2 border-t border-border px-5 py-3">
-        <button type="button" class="btn btn-secondary" @click="close">Cancelar</button>
+        <button type="button" class="btn btn-secondary" @click="close">
+          {{ $t('common.cancel') }}
+        </button>
         <button type="submit" class="btn btn-primary" :disabled="saving">
           {{ submitText }}
         </button>
@@ -152,15 +156,17 @@ export default {
     },
     title(): string {
       if (!this.isEdit) {
-        return 'Nueva cámara'
+        return this.$t('monitor.form.create')
       }
-      return this.cam === null ? 'Editar cámara' : `Editar CAM ${String(this.cam).padStart(2, '0')}`
+      return this.cam === null
+        ? this.$t('monitor.form.edit')
+        : this.$t('monitor.form.editCam', { cam: `CAM ${String(this.cam).padStart(2, '0')}` })
     },
     submitText(): string {
       if (this.saving) {
-        return 'Guardando…'
+        return this.$t('monitor.form.saving')
       }
-      return this.isEdit ? 'Guardar' : 'Instalar cámara'
+      return this.isEdit ? this.$t('common.save') : this.$t('monitor.form.install')
     },
     urlDescribedBy(): string | undefined {
       const ids = [this.isEdit ? 'monitor-url-help' : '', this.urlError ? 'monitor-url-error' : '']
@@ -171,10 +177,10 @@ export default {
     },
     nameError(): string {
       if (this.fieldErrors.name) {
-        return 'Revisá el nombre: tiene que tener entre 1 y 60 caracteres.'
+        return this.$t('monitor.form.nameInvalid', { max: NAME_MAX })
       }
       if (this.submitted && !this.name.trim()) {
-        return 'El nombre es obligatorio.'
+        return this.$t('monitor.form.nameRequired')
       }
       return ''
     },
@@ -183,7 +189,7 @@ export default {
         return this.fieldErrors.url
       }
       if (this.submitted && !this.isEdit && !this.url.trim()) {
-        return 'Completá la URL: tiene que empezar con http:// o https://.'
+        return this.$t('monitor.form.urlRequired')
       }
       return ''
     },
@@ -261,7 +267,7 @@ export default {
           if (this.fieldErrors.url) {
             this.fieldErrors = {
               ...this.fieldErrors,
-              url: 'Revisá la URL: tiene que empezar con http:// o https://.',
+              url: this.$t('monitor.form.urlInvalid'),
             }
           }
         } else {

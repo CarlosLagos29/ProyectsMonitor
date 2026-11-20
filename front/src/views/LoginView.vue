@@ -3,41 +3,40 @@
     <CameraFeed
       class="h-42.5 sm:h-50"
       rec="on"
-      label="Cam 00 · Entrada"
+      label="Cam 00"
       :stamp="clock"
       message="Projects Monitor"
       message-tag="h1"
       message-class="text-[40px] text-primary sm:text-[52px]"
-      detail="Monitor de uptime del portfolio de Carlos Lagos"
     />
 
-    <InfoNotice v-if="exitReason" tag="Sesión vencida" tone="warning" role="alert">
-      Tu sesión expiró. Volvé a entrar.
+    <InfoNotice v-if="exitReason" :tag="$t('login.expiredTag')" tone="warning" role="alert">
+      {{ $t('login.expired') }}
     </InfoNotice>
     <InfoNotice
       v-if="guestBlock === 'RATE_LIMITED' && guestWaitSeconds > 0"
-      tag="Bloqueo"
+      :tag="$t('login.blockedTag')"
       tone="destructive"
       role="alert"
     >
-      Demasiados intentos. Reintentá en
+      {{ $t('login.blocked') }}
       <span class="font-cam text-[20px]" aria-live="polite">{{ guestCountdown }}</span
       >.
     </InfoNotice>
     <InfoNotice
       v-else-if="guestBlock === 'GUEST_CAPACITY_REACHED'"
-      tag="Sin lugar"
+      :tag="$t('login.fullTag')"
       tone="warning"
       role="alert"
     >
-      Todos los turnos de invitado están ocupados. Probá de nuevo en un rato.
+      {{ $t('login.full') }}
     </InfoNotice>
-    <InfoNotice v-else-if="guestError" tag="Error" tone="destructive" role="alert">
+    <InfoNotice v-else-if="guestError" :tag="$t('common.error')" tone="destructive" role="alert">
       {{ $t(guestError.key, guestError.params) }}
     </InfoNotice>
 
     <div class="panel space-y-3 p-5">
-      <h2 class="text-lg font-semibold">¿Venís desde el portfolio?</h2>
+      <h2 class="text-lg font-semibold">{{ $t('login.guestTitle') }}</h2>
       <button
         type="button"
         class="btn btn-primary min-h-15 w-full text-[30px]"
@@ -45,23 +44,18 @@
         @click="enterAsGuest"
       >
         <Cctv :size="26" aria-hidden="true" />
-        {{ enteringAsGuest ? 'Conectando…' : 'Empezar turno' }}
+        {{ enteringAsGuest ? $t('login.connecting') : $t('login.guestStart') }}
       </button>
       <p class="text-sm text-muted-foreground">
-        Entrás como invitado: ves los monitores públicos y podés crear uno propio, que se borra solo
-        a las 12 h.
+        {{ $t('login.guestHelp') }}
       </p>
     </div>
 
-    <div class="flex items-center gap-3 font-cam text-[18px] text-muted-foreground uppercase">
-      <span class="h-px flex-1 bg-border" />
-      O acceso de administrador
-      <span class="h-px flex-1 bg-border" />
-    </div>
+    <hr class="border-border" />
 
     <form class="space-y-4" novalidate @submit.prevent="submitLogin">
       <div class="space-y-1">
-        <label for="login-email" class="text-sm font-medium">Email</label>
+        <label for="login-email" class="text-sm font-medium">{{ $t('login.email') }}</label>
         <input
           id="login-email"
           v-model.trim="email"
@@ -73,11 +67,11 @@
         />
         <p v-if="emailInvalid" id="login-email-error" class="field-error">
           <CircleAlert :size="14" aria-hidden="true" />
-          Completá el email.
+          {{ $t('login.emailRequired') }}
         </p>
       </div>
       <div class="space-y-1">
-        <label for="login-password" class="text-sm font-medium">Contraseña</label>
+        <label for="login-password" class="text-sm font-medium">{{ $t('login.password') }}</label>
         <div class="flex gap-2">
           <input
             id="login-password"
@@ -91,7 +85,7 @@
           <button
             type="button"
             class="btn btn-secondary btn-icon"
-            :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            :aria-label="showPassword ? $t('login.hidePassword') : $t('login.showPassword')"
             :aria-pressed="showPassword"
             @click="showPassword = !showPassword"
           >
@@ -101,14 +95,14 @@
         </div>
         <p v-if="passwordInvalid" id="login-password-error" class="field-error">
           <CircleAlert :size="14" aria-hidden="true" />
-          Completá la contraseña.
+          {{ $t('login.passwordRequired') }}
         </p>
       </div>
-      <InfoNotice v-if="loginError" tag="Error" tone="destructive" role="alert">
+      <InfoNotice v-if="loginError" :tag="$t('common.error')" tone="destructive" role="alert">
         {{ $t(loginError.key, loginError.params) }}
       </InfoNotice>
       <button type="submit" class="btn btn-secondary w-full" :disabled="loggingIn">
-        {{ loggingIn ? 'Entrando…' : 'Entrar' }}
+        {{ loggingIn ? $t('login.submitting') : $t('login.submit') }}
       </button>
     </form>
 

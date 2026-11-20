@@ -34,7 +34,7 @@ export default {
       return STATUS_ICON[toStatusKey(this.status)]
     },
     label(): string {
-      return this.status ? this.$t(`status.${this.status}`) : 'Sin chequeos'
+      return this.status ? this.$t(`status.${this.status}`) : this.$t('monitor.noChecks')
     },
   },
 }

@@ -1,14 +1,13 @@
 <template>
   <section class="space-y-6">
-    <InfoNotice v-if="isGuest" tag="Aviso" role="note">
-      <strong>Estás en modo demo.</strong> Projects Monitor es una app personal: lo que crees como
-      invitado es temporal y se borra solo a las 12 h.
+    <InfoNotice v-if="isGuest" :tag="$t('home.noticeTag')" role="note">
+      <strong>{{ $t('home.demo') }}</strong> {{ $t('home.demoDetail', { hours: 12 }) }}
     </InfoNotice>
 
     <header class="flex flex-wrap items-end justify-between gap-4">
       <div class="min-w-0 space-y-1">
         <h1 class="text-[26px] leading-tight font-bold sm:text-[34px]">{{ heading.title }}</h1>
-        <p class="text-muted-foreground">{{ heading.subtitle }}</p>
+        <p v-if="heading.subtitle" class="text-muted-foreground">{{ heading.subtitle }}</p>
       </div>
       <button
         v-if="isAdmin && activeScope === 'OWN'"
@@ -18,11 +17,11 @@
         @click="openCreate"
       >
         <Plus :size="18" aria-hidden="true" />
-        Agregar monitor
+        {{ $t('home.add') }}
       </button>
     </header>
 
-    <div role="tablist" aria-label="Listas de monitores" class="flex flex-wrap gap-2">
+    <div role="tablist" :aria-label="$t('home.tabsLabel')" class="flex flex-wrap gap-2">
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -54,8 +53,8 @@
             class="h-37.5 min-[720px]:h-42.5"
             :noise="0.18"
             rec="off"
-            label="Conectando"
-            message="Conectando…"
+            :label="$t('common.feed.connecting')"
+            :message="$t('common.feed.connectingMessage')"
           />
           <span class="block h-4 w-2/3 rounded bg-skeleton" />
           <span class="block h-4 w-1/2 rounded bg-skeleton" />
@@ -68,15 +67,15 @@
           class="min-h-50 flex-1"
           :noise="0.32"
           rec="off"
-          label="Sin señal"
-          message="Señal perdida"
+          :label="$t('common.feed.noSignal')"
+          :message="$t('common.feed.signalLost')"
         />
-        <InfoNotice tag="Error" tone="destructive" role="alert">
-          No pudimos cargar los monitores. {{ $t(error.key, error.params) }}
+        <InfoNotice :tag="$t('common.error')" tone="destructive" role="alert">
+          {{ $t('home.loadError') }} {{ $t(error.key, error.params) }}
         </InfoNotice>
         <button type="button" class="btn btn-secondary self-start" @click="fetchPage()">
           <RotateCw :size="18" aria-hidden="true" />
-          Reintentar
+          {{ $t('common.retry') }}
         </button>
       </div>
 
@@ -85,8 +84,8 @@
           class="min-h-75 flex-1"
           :noise="0.14"
           rec="off"
-          label="Cam -- · Libre"
-          message="No hay cámaras instaladas"
+          label="Cam --"
+          :message="$t('home.empty')"
           message-class="text-[32px] text-foreground"
           :detail="emptyText"
         />
@@ -98,7 +97,7 @@
           @click="openCreate"
         >
           <Plus :size="18" aria-hidden="true" />
-          Agregar monitor
+          {{ $t('home.add') }}
         </button>
       </div>
 
@@ -114,7 +113,7 @@
         <MonitorList :monitors="items" :offset="offset" @edit="openEdit" @delete="openDelete" />
         <nav
           v-if="totalPages > 1"
-          aria-label="Páginas de monitores"
+          :aria-label="$t('home.pagesLabel')"
           class="flex flex-wrap items-center justify-center gap-3"
         >
           <button
@@ -124,10 +123,10 @@
             @click="fetchPage(currentPage - 1)"
           >
             <ChevronLeft :size="18" aria-hidden="true" />
-            Anterior
+            {{ $t('home.previous') }}
           </button>
           <span class="font-cam text-[22px] uppercase" aria-live="polite">
-            Página {{ currentPage + 1 }} de {{ totalPages }}
+            {{ $t('home.page', { current: currentPage + 1, total: totalPages }) }}
           </span>
           <button
             type="button"
@@ -135,7 +134,7 @@
             :disabled="fetching || currentPage >= totalPages - 1"
             @click="fetchPage(currentPage + 1)"
           >
-            Siguiente
+            {{ $t('home.next') }}
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
         </nav>
@@ -221,50 +220,34 @@ export default {
     tabs(): { id: MonitorScope; label: string }[] {
       if (this.isGuest) {
         return [
-          { id: 'PUBLIC', label: 'Públicos' },
-          { id: 'OWN', label: 'Mi monitor' },
+          { id: 'PUBLIC', label: this.$t('home.tabs.public') },
+          { id: 'OWN', label: this.$t('home.tabs.guestOwn') },
         ]
       }
       return [
-        { id: 'OWN', label: 'Mis monitores' },
-        { id: 'GUESTS', label: 'De invitados' },
+        { id: 'OWN', label: this.$t('home.tabs.adminOwn') },
+        { id: 'GUESTS', label: this.$t('home.tabs.guests') },
       ]
     },
-    heading(): { title: string; subtitle: string } {
+    section(): 'public' | 'guests' | 'guestOwn' | 'adminOwn' {
       if (this.activeScope === 'PUBLIC') {
-        return {
-          title: 'Monitores públicos',
-          subtitle: 'Los proyectos que Carlos vigila, en solo lectura.',
-        }
+        return 'public'
       }
       if (this.activeScope === 'GUESTS') {
-        return {
-          title: 'Monitores de invitados',
-          subtitle:
-            'Los que crearon los invitados y no vencieron. Si pausás uno, el invitado lo puede reanudar: para cortarlo del todo, borralo.',
-        }
+        return 'guests'
       }
-      if (this.isGuest) {
-        return {
-          title: 'Mi monitor',
-          subtitle: 'Probá con una URL tuya: se chequea cada 10 minutos.',
-        }
-      }
+      return this.isGuest ? 'guestOwn' : 'adminOwn'
+    },
+    heading(): { title: string; subtitle: string } {
       return {
-        title: 'Mis monitores',
-        subtitle: 'Todos tus monitores, públicos y privados.',
+        title: this.$t(`home.${this.section}.title`),
+        subtitle: this.$te(`home.${this.section}.subtitle`)
+          ? this.$t(`home.${this.section}.subtitle`, { minutes: 10 })
+          : '',
       }
     },
     emptyText(): string {
-      if (this.activeScope === 'PUBLIC') {
-        return 'Todavía no hay monitores públicos.'
-      }
-      if (this.activeScope === 'GUESTS') {
-        return 'Ningún invitado tiene un monitor vigente.'
-      }
-      return this.isGuest
-        ? 'Agregá una URL para probar cómo funciona. Se borra sola a las 12 h.'
-        : 'Agregá el primer proyecto para empezar a vigilarlo.'
+      return this.$t(`home.${this.section}.empty`, { hours: 12 })
     },
     ownMonitor(): Monitor | null {
       return this.items[0] ?? null

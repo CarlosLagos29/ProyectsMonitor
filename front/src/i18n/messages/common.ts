@@ -7,6 +7,7 @@ export const commonEn = {
   save: 'Save',
   delete: 'Delete',
   close: 'Close',
+  error: 'Error',
 }
 
 export const commonEs = {
@@ -18,4 +19,13 @@ export const commonEs = {
   save: 'Guardar',
   delete: 'Borrar',
   close: 'Cerrar',
+  error: 'Error',
+  feed: {
+    connecting: 'Conectando',
+    connectingMessage: 'Conectando…',
+    noSignal: 'Sin señal',
+    signalLost: 'Señal perdida',
+    noAccess: 'Sin acceso',
+    accessDenied: 'Acceso denegado',
+  },
 }

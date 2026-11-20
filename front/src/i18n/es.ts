@@ -4,9 +4,11 @@ import { errorsEs } from './messages/errors'
 import { headerEs } from './messages/header'
 import { homeEs } from './messages/home'
 import { loginEs } from './messages/login'
+import { monitorEs } from './messages/monitor'
 import { monitorDetailEs } from './messages/monitorDetail'
 import { serverWakingEs } from './messages/serverWaking'
 import { statusEs } from './messages/status'
+import { timeEs } from './messages/time'
 
 export const es = {
   common: commonEs,
@@ -15,7 +17,9 @@ export const es = {
   errors: errorsEs,
   login: loginEs,
   home: homeEs,
+  monitor: monitorEs,
   monitorDetail: monitorDetailEs,
   header: headerEs,
   serverWaking: serverWakingEs,
+  time: timeEs,
 }

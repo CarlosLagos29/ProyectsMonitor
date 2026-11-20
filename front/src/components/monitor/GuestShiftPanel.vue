@@ -1,18 +1,22 @@
 <template>
   <aside class="panel flex flex-col gap-4 p-5">
-    <h2 class="cam-label text-[24px] text-muted-foreground">Tu turno</h2>
-    <p role="timer" :aria-label="`Quedan ${remainingText}`" class="space-y-1">
+    <h2 class="cam-label text-[24px] text-muted-foreground">{{ $t('monitor.shift.title') }}</h2>
+    <p
+      role="timer"
+      :aria-label="$t('monitor.shift.remainingLabel', { time: remainingText })"
+      class="space-y-1"
+    >
       <span
         class="block font-cam text-[56px] leading-none text-warning tabular-nums sm:text-[88px]"
       >
         {{ remainingText }}
       </span>
-      <span class="cam-label text-warning">Restantes</span>
+      <span class="cam-label text-warning">{{ $t('monitor.shift.remaining') }}</span>
     </p>
     <div
       class="h-2 overflow-hidden rounded-full bg-border"
       role="progressbar"
-      aria-label="Tiempo restante del turno"
+      :aria-label="$t('monitor.shift.progress')"
       :aria-valuenow="remainingPercent"
       aria-valuemin="0"
       aria-valuemax="100"
@@ -20,12 +24,10 @@
       <div class="h-full bg-warning" :style="{ width: `${remainingPercent}%` }" />
     </div>
     <p class="text-sm">
-      Tu cámara se creó a las <span class="font-mono">{{ createdText }}</span> y se desinstala sola
-      a las <span class="font-mono">{{ expiresText }}</span
-      >.
+      {{ $t('monitor.shift.lifetime', { created: createdText, expires: expiresText }) }}
     </p>
     <p class="text-sm text-muted-foreground">
-      Si la borrás antes, vuelve a aparecer "Agregar monitor" para instalar otra.
+      {{ $t('monitor.shift.deleteHint') }}
     </p>
   </aside>
 </template>
