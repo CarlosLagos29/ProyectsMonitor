@@ -1,25 +1,24 @@
 <template>
-  <section class="space-y-6">
+  <NotFoundView v-if="notFound" />
+  <section v-else class="space-y-6">
     <RouterLink
       :to="{ name: 'home' }"
       class="inline-flex min-h-11 items-center gap-2 font-cam text-[22px] text-primary uppercase"
     >
       <ArrowLeft :size="18" aria-hidden="true" />
-      Volver a las cámaras
+      {{ $t('monitorDetail.back') }}
     </RouterLink>
 
     <p v-if="loading && !monitor" class="font-cam text-[22px] text-muted-foreground uppercase">
-      Conectando…
+      {{ $t('common.feed.connectingMessage') }}
     </p>
-    <div v-else-if="notFound" class="space-y-4">
-      <h1 class="text-[26px] font-bold sm:text-[34px]">Cámara no encontrada</h1>
-      <p class="text-muted-foreground">Este monitor no existe o ya venció.</p>
-    </div>
     <div v-else-if="error && !monitor" class="space-y-3">
-      <InfoNotice tag="Error" tone="destructive" role="alert">
+      <InfoNotice :tag="$t('common.error')" tone="destructive" role="alert">
         {{ $t(error.key, error.params) }}
       </InfoNotice>
-      <button type="button" class="btn btn-secondary" @click="load">Reintentar</button>
+      <button type="button" class="btn btn-secondary" @click="load">
+        {{ $t('common.retry') }}
+      </button>
     </div>
     <div v-else-if="monitor" class="space-y-6">
       <header class="space-y-1">
@@ -44,10 +43,10 @@
             class="h-50 flex-1 sm:min-h-75"
             :noise="chartNoise"
             :rec="series?.results.length ? 'on' : 'off'"
-            label="REC · Latencia 24 H"
+            :label="`REC · ${$t('monitorDetail.latency')}`"
             :stamp="series ? checksLabel : ''"
             bottom-left="−24 H"
-            bottom-right="Ahora"
+            :bottom-right="$t('monitorDetail.now')"
             :message="chartMessage"
           >
             <div v-if="series && series.results.length" class="absolute inset-x-3 top-10 bottom-10">
@@ -57,35 +56,39 @@
           <ul class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <li class="flex items-center gap-1.5">
               <span class="h-0.5 w-4 rounded bg-status-up" aria-hidden="true" />
-              Operativo
+              {{ $t('status.UP') }}
             </li>
             <li class="flex items-center gap-1.5">
               <span class="h-3 w-0.5 bg-status-blocked/70" aria-hidden="true" />
-              Bloqueado
+              {{ $t('status.BLOCKED') }}
             </li>
             <li class="flex items-center gap-1.5">
               <span class="h-3 w-3 bg-status-down/30" aria-hidden="true" />
-              Caído
+              {{ $t('status.DOWN') }}
             </li>
             <li v-if="hasRejected" class="flex items-center gap-1.5">
               <span class="h-3 w-0.5 bg-status-rejected/70" aria-hidden="true" />
-              Rechazado
+              {{ $t('status.REJECTED') }}
             </li>
           </ul>
         </div>
       </div>
 
       <section class="space-y-3" aria-labelledby="checks-title">
-        <h2 id="checks-title" class="cam-label text-[24px]">Chequeos recientes</h2>
-        <InfoNotice v-if="seriesError" tag="Error" tone="destructive" role="alert">
-          No pudimos cargar los chequeos. {{ $t(seriesError.key, seriesError.params) }}
-          <button type="button" class="ml-2 underline" @click="loadSeries">Reintentar</button>
+        <h2 id="checks-title" class="cam-label text-[24px]">
+          {{ $t('monitorDetail.recentChecks') }}
+        </h2>
+        <InfoNotice v-if="seriesError" :tag="$t('common.error')" tone="destructive" role="alert">
+          {{ $t('monitorDetail.loadError') }} {{ $t(seriesError.key, seriesError.params) }}
+          <button type="button" class="ml-2 underline" @click="loadSeries">
+            {{ $t('common.retry') }}
+          </button>
         </InfoNotice>
         <p v-else-if="seriesLoading && !series" class="text-sm text-muted-foreground">
-          Cargando chequeos…
+          {{ $t('monitorDetail.loadingChecks') }}
         </p>
         <p v-else-if="!newestFirst.length" class="text-sm text-muted-foreground">
-          Todavía no hay chequeos en las últimas 24 h.
+          {{ $t('monitorDetail.emptyChecks') }}
         </p>
         <ChecksTable v-else :results="newestFirst" />
       </section>
@@ -124,6 +127,8 @@ import MonitorFormDialog from '@/components/monitor/MonitorFormDialog.vue'
 import { useMonitorsStore } from '@/stores/monitors'
 import { useSessionStore } from '@/stores/session'
 
+import NotFoundView from './NotFoundView.vue'
+
 import type { MonitorDetailData } from './views.types'
 
 const DEFAULT_POLL_SECONDS = 600
@@ -141,6 +146,7 @@ export default {
     LatencyChart,
     MonitorCard,
     MonitorFormDialog,
+    NotFoundView,
   },
   props: {
     id: {
@@ -174,21 +180,20 @@ export default {
       return this.series ? [...this.series.results].reverse() : []
     },
     checksLabel(): string {
-      const count = this.series?.results.length ?? 0
-      return `${count} ${count === 1 ? 'chequeo' : 'chequeos'}`
+      return this.$t('monitor.uptime.checks', this.series?.results.length ?? 0)
     },
     hasRejected(): boolean {
       return this.series?.results.some((result) => result.status === 'REJECTED') ?? false
     },
     chartMessage(): string {
       if (this.monitor?.lastCheck?.status === 'DOWN') {
-        return 'Señal perdida'
+        return this.$t('common.feed.signalLost')
       }
       if (this.series && !this.series.results.length) {
-        return 'Sin chequeos todavía'
+        return this.$t('monitorDetail.noChecksYet')
       }
       if (!this.series && this.seriesLoading) {
-        return 'Conectando…'
+        return this.$t('common.feed.connectingMessage')
       }
       return ''
     },

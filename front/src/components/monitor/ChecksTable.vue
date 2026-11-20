@@ -3,14 +3,22 @@
     <div class="overflow-x-auto rounded-sm border border-border">
       <table class="w-full min-w-155 text-sm">
         <caption class="sr-only">
-          Chequeos de las últimas 24 h, del más nuevo al más viejo
+          {{
+            $t('monitorDetail.table.caption')
+          }}
         </caption>
         <thead class="bg-card text-left text-xs text-muted-foreground">
           <tr>
-            <th scope="col" class="px-4 py-3 font-medium">Fecha y hora</th>
-            <th scope="col" class="px-4 py-3 font-medium">Estado</th>
-            <th scope="col" class="px-4 py-3 text-right font-medium">Latencia</th>
-            <th scope="col" class="px-4 py-3 font-medium">Código o motivo</th>
+            <th scope="col" class="px-4 py-3 font-medium">{{ $t('monitorDetail.table.date') }}</th>
+            <th scope="col" class="px-4 py-3 font-medium">
+              {{ $t('monitorDetail.table.status') }}
+            </th>
+            <th scope="col" class="px-4 py-3 text-right font-medium">
+              {{ $t('monitorDetail.table.latency') }}
+            </th>
+            <th scope="col" class="px-4 py-3 font-medium">
+              {{ $t('monitorDetail.table.reason') }}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -37,7 +45,7 @@
       </table>
     </div>
     <button v-if="hasMore" type="button" class="btn btn-secondary" @click="showMore">
-      Ver más
+      {{ $t('monitorDetail.table.more') }}
     </button>
   </div>
 </template>

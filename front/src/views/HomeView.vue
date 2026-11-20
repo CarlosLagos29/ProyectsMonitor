@@ -5,15 +5,12 @@
     </InfoNotice>
 
     <header class="flex flex-wrap items-end justify-between gap-4">
-      <div class="min-w-0 space-y-1">
-        <h1 class="text-[26px] leading-tight font-bold sm:text-[34px]">{{ heading.title }}</h1>
-        <p v-if="heading.subtitle" class="text-muted-foreground">{{ heading.subtitle }}</p>
-      </div>
+      <h1 class="min-w-0 text-[26px] leading-tight font-bold sm:text-[34px]">{{ title }}</h1>
       <button
-        v-if="isAdmin && activeScope === 'OWN'"
+        v-if="activeScope === 'OWN' && canCreate"
         type="button"
         class="btn btn-primary"
-        :disabled="loading || !canCreate"
+        :disabled="loading"
         @click="openCreate"
       >
         <Plus :size="18" aria-hidden="true" />
@@ -79,27 +76,16 @@
         </button>
       </div>
 
-      <div v-else-if="!items.length" class="flex flex-col gap-4">
-        <CameraFeed
-          class="min-h-75 flex-1"
-          :noise="0.14"
-          rec="off"
-          label="Cam --"
-          :message="$t('home.empty')"
-          message-class="text-[32px] text-foreground"
-          :detail="emptyText"
-        />
-        <button
-          v-if="activeScope === 'OWN'"
-          type="button"
-          class="btn btn-primary self-center"
-          :disabled="!canCreate"
-          @click="openCreate"
-        >
-          <Plus :size="18" aria-hidden="true" />
-          {{ $t('home.add') }}
-        </button>
-      </div>
+      <CameraFeed
+        v-else-if="!items.length"
+        class="min-h-75"
+        :noise="0.14"
+        rec="off"
+        label="Cam --"
+        :message="$t('home.empty')"
+        message-class="text-[32px] text-foreground"
+        :detail="emptyText"
+      />
 
       <div
         v-else-if="isGuest && activeScope === 'OWN' && ownMonitor"
@@ -238,13 +224,8 @@ export default {
       }
       return this.isGuest ? 'guestOwn' : 'adminOwn'
     },
-    heading(): { title: string; subtitle: string } {
-      return {
-        title: this.$t(`home.${this.section}.title`),
-        subtitle: this.$te(`home.${this.section}.subtitle`)
-          ? this.$t(`home.${this.section}.subtitle`, { minutes: 10 })
-          : '',
-      }
+    title(): string {
+      return this.$t(`home.${this.section}.title`)
     },
     emptyText(): string {
       return this.$t(`home.${this.section}.empty`, { hours: 12 })

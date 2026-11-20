@@ -7,6 +7,8 @@ export const homeEn = {
   tabs: {
     public: 'Public',
     guestOwn: 'My monitor',
+    adminOwn: 'My monitors',
+    guests: 'Guests',
   },
   public: {
     title: 'Public monitors',
@@ -14,8 +16,15 @@ export const homeEn = {
   },
   guestOwn: {
     title: 'My monitor',
-    subtitle: 'Try one of your own URLs: it gets checked every {minutes} minutes.',
     empty: 'Add a URL to see how it works. It gets deleted after {hours} h.',
+  },
+  adminOwn: {
+    title: 'My monitors',
+    empty: 'Add your first project to start watching it.',
+  },
+  guests: {
+    title: 'Guest monitors',
+    empty: 'No guest has an active monitor.',
   },
   empty: 'No cameras installed',
   loadError: "We couldn't load the monitors.",
@@ -35,7 +44,7 @@ export const homeEs = {
     public: 'Públicos',
     guestOwn: 'Mi monitor',
     adminOwn: 'Mis monitores',
-    guests: 'De invitados',
+    guests: 'Invitados',
   },
   public: {
     title: 'Monitores públicos',
@@ -43,18 +52,14 @@ export const homeEs = {
   },
   guestOwn: {
     title: 'Mi monitor',
-    subtitle: 'Probá con una URL tuya: se chequea cada {minutes} minutos.',
     empty: 'Agregá una URL para probar cómo funciona. Se borra sola a las {hours} h.',
   },
   adminOwn: {
     title: 'Mis monitores',
-    subtitle: 'Todos tus monitores, públicos y privados.',
     empty: 'Agregá el primer proyecto para comenzar a vigilarlo.',
   },
   guests: {
     title: 'Monitores de invitados',
-    subtitle:
-      'Los que crearon los invitados y no vencieron. Si pausás uno, el invitado lo puede reanudar: para cortarlo del todo, borralo.',
     empty: 'Ningún invitado tiene un monitor vigente.',
   },
   empty: 'No hay cámaras instaladas',

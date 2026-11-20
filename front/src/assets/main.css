@@ -35,7 +35,6 @@
 :root {
   --background: #0a0d0b;
   --card: #121714;
-  --popover: #121714;
   --muted: #0e1310;
   --border: #26302a;
   --input: #26302a;
@@ -67,7 +66,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-card: var(--card);
-  --color-popover: var(--popover);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-input: var(--input);

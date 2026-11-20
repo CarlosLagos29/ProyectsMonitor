@@ -136,7 +136,6 @@ export default {
       email: '',
       password: '',
       showPassword: false,
-      failedAttempts: 0,
       now: Date.now(),
       clockTimer: undefined,
       submitted: false,
@@ -192,9 +191,6 @@ export default {
         await this.$router.push({ name: 'home' })
       } catch (error) {
         const apiError = toApiError(error)
-        if (apiError.reason === 'INVALID_CREDENTIALS') {
-          this.failedAttempts += 1
-        }
         this.serverFieldErrors = apiError.fieldErrors
         this.loginError = describeError(apiError)
       } finally {

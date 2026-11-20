@@ -1,6 +1,6 @@
 <template>
-  <header class="border-b border-border bg-card">
-    <div class="mx-auto flex max-w-300 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
+  <header class="sticky top-0 z-20 border-b border-border bg-card">
+    <div class="mx-auto flex max-w-300 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.25">
       <RouterLink
         :to="{ name: 'home' }"
         class="flex min-h-11 items-center gap-2 font-cam text-[28px] leading-none text-foreground uppercase"

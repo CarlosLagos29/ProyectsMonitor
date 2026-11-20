@@ -1,7 +1,5 @@
 export const commonEn = {
-  appName: 'Projects Monitor',
   language: 'Language',
-  loading: 'Loading…',
   retry: 'Retry',
   cancel: 'Cancel',
   save: 'Save',
@@ -19,9 +17,7 @@ export const commonEn = {
 }
 
 export const commonEs = {
-  appName: 'Projects Monitor',
   language: 'Idioma',
-  loading: 'Cargando…',
   retry: 'Reintentar',
   cancel: 'Cancelar',
   save: 'Guardar',

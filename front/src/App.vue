@@ -1,8 +1,8 @@
 <template>
   <AppHeader v-if="showHeader" />
   <main class="mx-auto w-full max-w-300 space-y-5 px-4 py-6">
-    <InfoNotice v-if="!serverUp" tag="Conectando cámaras…" tone="warning" dashed role="status">
-      El servidor está despertando (hosting gratuito, ~1 min). Podés seguir navegando.
+    <InfoNotice v-if="!serverUp" :tag="$t('serverWaking.tag')" tone="warning" dashed role="status">
+      {{ $t('serverWaking.detail', { minutes: 1 }) }}
     </InfoNotice>
     <RouterView />
   </main>

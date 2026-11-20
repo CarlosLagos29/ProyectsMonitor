@@ -7,7 +7,6 @@ export interface LoginData {
   email: string
   password: string
   showPassword: boolean
-  failedAttempts: number
   now: number
   clockTimer: ReturnType<typeof setInterval> | undefined
   submitted: boolean
