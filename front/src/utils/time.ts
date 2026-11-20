@@ -46,3 +46,8 @@ export function formatCountdown(seconds: number): string {
   const total = Math.max(0, Math.ceil(seconds))
   return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`
 }
+
+export function formatHoursMinutesSeconds(milliseconds: number): string {
+  const total = Math.max(0, Math.floor(milliseconds / 1_000))
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`
+}

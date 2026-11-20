@@ -3,25 +3,14 @@ package dev.projectsmonitor.ratelimit
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import dev.projectsmonitor.common.toLogSafe
-import dev.projectsmonitor.error.ApiErrorReason
-import dev.projectsmonitor.error.ApiException
-import dev.projectsmonitor.error.toRetryAfterSeconds
+import dev.projectsmonitor.error.RateLimitExceededException
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.ConsumptionProbe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.time.Duration
 
 data class RateLimit(val capacity: Long, val period: Duration)
-
-class RateLimitExceededException(retryAfter: Duration) :
-    ApiException(
-        HttpStatus.TOO_MANY_REQUESTS,
-        ApiErrorReason.RATE_LIMITED,
-        "Rate limit exceeded. Try again in ${retryAfter.toRetryAfterSeconds()} seconds.",
-        retryAfter,
-    )
 
 class KeyedRateLimiter(private val scope: String, private val limit: RateLimit) {
 

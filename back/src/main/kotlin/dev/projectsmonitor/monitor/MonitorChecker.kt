@@ -7,13 +7,13 @@ import dev.projectsmonitor.check.HealthCheckService
 import dev.projectsmonitor.common.toLogSafe
 import dev.projectsmonitor.config.AppProperties
 import dev.projectsmonitor.config.HealthCheckProperties
+import dev.projectsmonitor.monitor.mapper.MonitorMapper
 import dev.projectsmonitor.ratelimit.KeyedRateLimiter
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Service
@@ -38,34 +38,33 @@ class MonitorChecker(
         .build()
 
     fun check(monitor: Monitor): CheckResult {
-        val result = requireNotNull(
-            resultFor(monitor.url) { host ->
-                hostLimiter.acquire(host)
-                true
-            },
-        )
+        val result = requireNotNull(resultFor(monitor.url, wait = true))
         return transactionTemplate.execute { record(monitor.id, result) } ?: throw monitorNotFound()
     }
 
     fun checkScheduled(monitors: List<Monitor>): Boolean {
-        val result = resultFor(monitors.first().url) { host -> hostLimiter.tryAcquire(host) } ?: return false
+        val result = resultFor(monitors.first().url, wait = false) ?: return false
         transactionTemplate.executeWithoutResult { monitors.forEach { record(it.id, result) } }
         return true
     }
 
-    private fun resultFor(url: String, acquireHost: (String) -> Boolean): HealthCheckResult? {
+    private fun resultFor(url: String, wait: Boolean): HealthCheckResult? {
         recentResults.getIfPresent(url)?.let {
             LOG.debug("Check result reused: url={} checkedAt={}", url.toLogSafe(), it.checkedAt)
             return it
         }
         val target = url.toHttpUrl()
-        if (!acquireHost(target.host)) return null
+        if (wait) {
+            hostLimiter.acquire(target.host)
+        } else if (!hostLimiter.tryAcquire(target.host)) {
+            return null
+        }
         return healthCheckService.check(target).also { recentResults.put(url, it) }
     }
 
     private fun record(monitorId: UUID, result: HealthCheckResult): CheckResult? {
         val monitor = monitorRepository.findById(monitorId).orElse(null) ?: return null
-        val checkedAt = result.checkedAt.truncatedTo(ChronoUnit.MILLIS)
+        val checkedAt = result.checkedAt
         if (monitor.lastCheckedAt?.isBefore(checkedAt) == false) {
             return checkResultRepository.findFirstByMonitorIdOrderByCheckedAtDesc(monitor.id)
         }
@@ -80,17 +79,6 @@ class MonitorChecker(
         if (previousStatus != null && previousStatus != result.status) {
             LOG.warn("Monitor status changed: id={} from={} to={}", monitor.id, previousStatus, result.status)
         }
-        return checkResultRepository.save(
-            CheckResult(
-                monitor = monitor,
-                checkedAt = checkedAt,
-                status = result.status,
-                reason = result.reason,
-                httpStatus = result.httpStatus,
-                latencyMs = result.latencyMs.toInt(),
-                finalUrl = result.finalUrl,
-                redirects = result.redirects,
-            ),
-        )
+        return checkResultRepository.save(MonitorMapper.toNewResult(monitor, result, checkedAt))
     }
 }

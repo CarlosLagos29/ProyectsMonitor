@@ -1,5 +1,8 @@
 package dev.projectsmonitor.monitor
 
+import dev.projectsmonitor.common.GuestRateLimitDoc
+import dev.projectsmonitor.common.PROBLEM_JSON
+import dev.projectsmonitor.common.SessionExpiredDoc
 import dev.projectsmonitor.monitor.dto.CheckResultResponse
 import dev.projectsmonitor.monitor.dto.CheckResultsResponse
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
@@ -12,7 +15,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.ProblemDetail
 
-private const val PROBLEM = "application/problem+json"
+@Target(AnnotationTarget.ANNOTATION_CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@ApiResponse(
+    responseCode = "404",
+    description = "It does not exist, it expired or it is someone else's private monitor (reason NOT_FOUND).",
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
+)
+annotation class MonitorNotFoundDoc
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
@@ -40,23 +50,15 @@ private const val PROBLEM = "application/problem+json"
 @ApiResponse(
     responseCode = "400",
     description = "page, size or scope invalid (reason VALIDATION_ERROR, with errors per field).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
 @ApiResponse(
     responseCode = "403",
     description = "A guest sent scope GUESTS (reason FORBIDDEN_FOR_ROLE).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "429",
-    description = "Too many requests from this guest (reason RATE_LIMITED). See Retry-After.",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@GuestRateLimitDoc
 annotation class ListMonitorsDocs
 
 @Target(AnnotationTarget.FUNCTION)
@@ -73,16 +75,9 @@ annotation class ListMonitorsDocs
         ),
     ],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
-@ApiResponse(
-    responseCode = "404",
-    description = "It does not exist, it expired or it is someone else's private monitor (reason NOT_FOUND).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
+@MonitorNotFoundDoc
+@GuestRateLimitDoc
 annotation class GetMonitorDocs
 
 @Target(AnnotationTarget.FUNCTION)
@@ -107,33 +102,25 @@ annotation class GetMonitorDocs
 @ApiResponse(
     responseCode = "400",
     description = "Invalid fields (reason VALIDATION_ERROR, with errors) or invalid URL (reason INVALID_URL).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
 @ApiResponse(
     responseCode = "403",
     description = "A guest sent isPublic: true (reason FORBIDDEN_FOR_ROLE).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
 @ApiResponse(
     responseCode = "409",
     description = "The guest already has a monitor (reason MONITOR_LIMIT_REACHED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "429",
-    description = "Too many requests from this guest (reason RATE_LIMITED). See Retry-After.",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@GuestRateLimitDoc
 @ApiResponse(
     responseCode = "503",
     description = "Too many guests have a monitor right now (reason GUEST_CAPACITY_REACHED). Retry-After says when " +
         "the oldest one expires.",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
 annotation class CreateMonitorDocs
 
@@ -151,24 +138,17 @@ annotation class CreateMonitorDocs
 @ApiResponse(
     responseCode = "400",
     description = "Invalid fields (reason VALIDATION_ERROR, with errors).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
 @ApiResponse(
     responseCode = "403",
     description = "A guest on someone else's public monitor, a guest sent isPublic: true, or the admin sent " +
         "isPublic: true on a guest monitor (reason FORBIDDEN_FOR_ROLE).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "404",
-    description = "Not found (reason NOT_FOUND).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@MonitorNotFoundDoc
+@GuestRateLimitDoc
 annotation class UpdateMonitorDocs
 
 @Target(AnnotationTarget.FUNCTION)
@@ -178,21 +158,14 @@ annotation class UpdateMonitorDocs
     description = "Deletes the monitor and all its history. A guest can then create another one.",
 )
 @ApiResponse(responseCode = "204", description = "Deleted.")
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
 @ApiResponse(
     responseCode = "403",
     description = "A guest on someone else's public monitor (reason FORBIDDEN_FOR_ROLE).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "404",
-    description = "Not found (reason NOT_FOUND).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@MonitorNotFoundDoc
+@GuestRateLimitDoc
 annotation class DeleteMonitorDocs
 
 @Target(AnnotationTarget.FUNCTION)
@@ -216,26 +189,18 @@ annotation class DeleteMonitorDocs
         ),
     ],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
 @ApiResponse(
     responseCode = "403",
     description = "A guest on someone else's public monitor (reason FORBIDDEN_FOR_ROLE).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
-@ApiResponse(
-    responseCode = "404",
-    description = "Not found (reason NOT_FOUND).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@MonitorNotFoundDoc
 @ApiResponse(
     responseCode = "429",
     description = "Checked less than a minute ago, the guest's hourly limit, or too many checks to the same site " +
         "(reason RATE_LIMITED). See Retry-After.",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
+    content = [Content(mediaType = PROBLEM_JSON, schema = Schema(implementation = ProblemDetail::class))],
 )
 annotation class CheckMonitorDocs
 
@@ -257,21 +222,9 @@ annotation class CheckMonitorDocs
         ),
     ],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
-@ApiResponse(
-    responseCode = "404",
-    description = "It does not exist, it expired or it is someone else's private monitor (reason NOT_FOUND).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
-@ApiResponse(
-    responseCode = "429",
-    description = "Too many requests from this guest (reason RATE_LIMITED). See Retry-After.",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
+@MonitorNotFoundDoc
+@GuestRateLimitDoc
 annotation class MonitorStatsDocs
 
 @Target(AnnotationTarget.FUNCTION)
@@ -293,21 +246,9 @@ annotation class MonitorStatsDocs
         ),
     ],
 )
-@ApiResponse(
-    responseCode = "401",
-    description = "Missing, invalid or expired token (reason SESSION_EXPIRED).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
-@ApiResponse(
-    responseCode = "404",
-    description = "It does not exist, it expired or it is someone else's private monitor (reason NOT_FOUND).",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
-@ApiResponse(
-    responseCode = "429",
-    description = "Too many requests from this guest (reason RATE_LIMITED). See Retry-After.",
-    content = [Content(mediaType = PROBLEM, schema = Schema(implementation = ProblemDetail::class))],
-)
+@SessionExpiredDoc
+@MonitorNotFoundDoc
+@GuestRateLimitDoc
 annotation class MonitorResultsDocs
 
 private const val MONITOR_EXAMPLE = """

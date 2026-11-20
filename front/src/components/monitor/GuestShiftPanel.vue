@@ -1,11 +1,13 @@
 <template>
   <aside class="panel flex flex-col gap-4 p-5">
     <h2 class="cam-label text-[24px] text-muted-foreground">Tu turno</h2>
-    <p role="timer" :aria-label="`Quedan ${remainingText} horas`" class="space-y-1">
-      <span class="block font-cam text-[72px] leading-none text-warning sm:text-[88px]">
+    <p role="timer" :aria-label="`Quedan ${remainingText}`" class="space-y-1">
+      <span
+        class="block font-cam text-[56px] leading-none text-warning tabular-nums sm:text-[88px]"
+      >
         {{ remainingText }}
       </span>
-      <span class="cam-label text-warning">H restantes</span>
+      <span class="cam-label text-warning">Restantes</span>
     </p>
     <div
       class="h-2 overflow-hidden rounded-full bg-border"
@@ -32,11 +34,11 @@
 import type { PropType } from 'vue'
 
 import type { Monitor } from '@/api/api.types'
-import { formatClock, formatHoursMinutes } from '@/utils/time'
+import { formatClock, formatHoursMinutesSeconds } from '@/utils/time'
 
 import type { GuestShiftData } from '../components.types'
 
-const TICK_MS = 30_000
+const TICK_MS = 1_000
 
 export default {
   name: 'GuestShiftPanel',
@@ -57,7 +59,7 @@ export default {
       return this.monitor.expiresAt?.getTime() ?? this.now
     },
     remainingText(): string {
-      return formatHoursMinutes(this.expiresAt - this.now)
+      return formatHoursMinutesSeconds(this.expiresAt - this.now)
     },
     remainingPercent(): number {
       const total = this.expiresAt - this.monitor.createdAt.getTime()

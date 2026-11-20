@@ -2,13 +2,9 @@ package dev.projectsmonitor.check
 
 import dev.projectsmonitor.common.isDomain
 import dev.projectsmonitor.common.isIpLiteral
-import dev.projectsmonitor.error.ApiErrorReason
-import dev.projectsmonitor.error.ApiException
+import dev.projectsmonitor.error.InvalidUrlException
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import org.springframework.http.HttpStatus
-
-class InvalidUrlException(message: String) : ApiException(HttpStatus.BAD_REQUEST, ApiErrorReason.INVALID_URL, message)
 
 object UrlNormalizer {
 

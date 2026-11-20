@@ -9,8 +9,6 @@ import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
 import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
-import dev.projectsmonitor.monitor.mapper.CheckResultMapper
-import dev.projectsmonitor.monitor.mapper.MonitorMapper
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.slf4j.Logger
@@ -44,21 +42,21 @@ class MonitorController(private val monitorService: MonitorService) {
     @ListMonitorsDocs
     fun list(@Valid @ParameterObject query: MonitorListQuery, user: CurrentUser): MonitorListResponse {
         LOG.info("List monitors: user={} scope={} page={} size={}", user.id, query.scope, query.page, query.size)
-        return MonitorMapper.toListResponse(monitorService.list(user, query))
+        return monitorService.list(user, query)
     }
 
     @GetMapping("/{id}")
     @GetMonitorDocs
     fun get(@PathVariable id: UUID, user: CurrentUser): MonitorResponse {
         LOG.info("Get monitor: id={} user={}", id, user.id)
-        return MonitorMapper.toResponse(monitorService.get(id, user))
+        return monitorService.get(id, user)
     }
 
     @PostMapping
     @CreateMonitorDocs
     fun create(@Valid @RequestBody request: CreateMonitorRequest, user: CurrentUser): ResponseEntity<MonitorResponse> {
         LOG.info("Create monitor: user={}", user.id)
-        val response = MonitorMapper.toResponse(monitorService.create(request, user))
+        val response = monitorService.create(request, user)
         return ResponseEntity.created(URI.create("$BASE_PATH/${response.id}")).body(response)
     }
 
@@ -70,7 +68,7 @@ class MonitorController(private val monitorService: MonitorService) {
         user: CurrentUser,
     ): MonitorResponse {
         LOG.info("Update monitor: id={} user={}", id, user.id)
-        return MonitorMapper.toResponse(monitorService.update(id, request, user))
+        return monitorService.update(id, request, user)
     }
 
     @DeleteMapping("/{id}")
@@ -85,20 +83,20 @@ class MonitorController(private val monitorService: MonitorService) {
     @MonitorStatsDocs
     fun stats(@PathVariable id: UUID, user: CurrentUser): MonitorStatsResponse {
         LOG.info("Monitor stats: id={} user={}", id, user.id)
-        return CheckResultMapper.toStatsResponse(monitorService.stats(id, user))
+        return monitorService.stats(id, user)
     }
 
     @GetMapping("/{id}/results")
     @MonitorResultsDocs
     fun results(@PathVariable id: UUID, user: CurrentUser): CheckResultsResponse {
         LOG.info("Monitor results: id={} user={}", id, user.id)
-        return CheckResultMapper.toResultsResponse(monitorService.results(id, user))
+        return monitorService.results(id, user)
     }
 
     @PostMapping("/{id}/check")
     @CheckMonitorDocs
     fun check(@PathVariable id: UUID, user: CurrentUser): CheckResultResponse {
         LOG.info("Manual check: id={} user={}", id, user.id)
-        return CheckResultMapper.toResponse(monitorService.check(id, user))
+        return monitorService.check(id, user)
     }
 }

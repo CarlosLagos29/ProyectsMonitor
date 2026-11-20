@@ -19,6 +19,7 @@ class AppProperties(
     @Valid val cors: Cors,
     @Valid val limits: Limits,
     @Valid val authRateLimit: AuthRateLimit,
+    val retention: Duration,
 ) {
 
     class Jwt(
