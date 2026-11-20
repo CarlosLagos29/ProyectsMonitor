@@ -58,8 +58,15 @@ tasks:
 
   delete:
     desc: Remove everything this project created in Docker (containers, network, database volume and built images)
+    prompt: This removes the containers, the built images and the database volume (all local data). Continue?
     cmds:
       - docker compose --profile prod down --rmi local --volumes --remove-orphans
+
+  clear:db:
+    desc: Delete all monitors and their check results from the local database (keeps the schema; Postgres must be running)
+    prompt: This deletes every monitor and check result in the local database. Continue?
+    cmds:
+      - docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "TRUNCATE check_results, monitors"'
 
   build:front:
     desc: Build the production front (Vite build served by nginx, like the deploy) and serve it on port 3000 instead of the dev server, then follow its logs
