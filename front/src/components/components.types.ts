@@ -47,3 +47,8 @@ export interface GuestShiftData {
 export interface ChecksTableData {
   visibleRows: number
 }
+
+export interface IntruderAlertData {
+  phase: 'scare' | 'alert'
+  scareTimer: ReturnType<typeof setTimeout> | undefined
+}

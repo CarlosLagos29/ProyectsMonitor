@@ -42,9 +42,9 @@
           @checked="loadSeries"
         />
 
-        <div class="flex min-w-0 flex-col gap-3">
+        <div class="flex min-w-0 flex-col gap-3 max-lg:order-first">
           <CameraFeed
-            class="h-50 flex-1 sm:min-h-75"
+            class="min-h-50 flex-1 sm:min-h-75"
             :noise="chartNoise"
             :rec="series?.results.length ? 'on' : 'off'"
             :label="`REC · ${$t('monitorDetail.latency')}`"

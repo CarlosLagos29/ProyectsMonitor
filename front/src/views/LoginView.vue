@@ -109,6 +109,8 @@
         {{ loggingIn ? $t('login.submitting') : $t('login.submit') }}
       </button>
     </form>
+
+    <IntruderAlert :open="intruderDetected" :stamp="clock" />
   </section>
 </template>
 
@@ -119,6 +121,7 @@ import { mapActions, mapState } from 'pinia'
 import { describeError, toApiError } from '@/api/errors'
 import CameraFeed from '@/components/layout/CameraFeed.vue'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
+import IntruderAlert from '@/components/layout/IntruderAlert.vue'
 import { useSessionStore } from '@/stores/session'
 import { formatClock, formatCountdown } from '@/utils/time'
 
@@ -126,10 +129,11 @@ import type { LoginData } from './views.types'
 
 const CLOCK_TICK_MS = 15_000
 const DEFAULT_CAPACITY_WAIT_SECONDS = 60
+const INTRUDER_ATTEMPTS = 5
 
 export default {
   name: 'LoginView',
-  components: { CameraFeed, Cctv, CircleAlert, Eye, EyeOff, InfoNotice },
+  components: { CameraFeed, Cctv, CircleAlert, Eye, EyeOff, InfoNotice, IntruderAlert },
   data(): LoginData {
     return {
       email: '',
@@ -141,6 +145,7 @@ export default {
       serverFieldErrors: {},
       loggingIn: false,
       loginError: null,
+      failedAttempts: 0,
       enteringAsGuest: false,
       guestError: null,
       guestWaitSeconds: 0,
@@ -162,6 +167,9 @@ export default {
     guestCountdown(): string {
       return formatCountdown(this.guestWaitSeconds)
     },
+    intruderDetected(): boolean {
+      return this.failedAttempts >= INTRUDER_ATTEMPTS
+    },
     guestBlocked(): boolean {
       return this.guestBlock !== null && this.guestWaitSeconds > 0
     },
@@ -182,6 +190,7 @@ export default {
       this.serverFieldErrors = {}
       this.loginError = null
       if (!this.email || !this.password) {
+        this.failedAttempts += 1
         return
       }
       this.loggingIn = true
@@ -192,6 +201,7 @@ export default {
         const apiError = toApiError(error)
         this.serverFieldErrors = apiError.fieldErrors
         this.loginError = describeError(apiError)
+        this.failedAttempts += 1
       } finally {
         this.loggingIn = false
       }

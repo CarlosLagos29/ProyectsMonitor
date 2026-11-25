@@ -3,6 +3,7 @@ import { commonEn } from './messages/common'
 import { errorsEn } from './messages/errors'
 import { headerEn } from './messages/header'
 import { homeEn } from './messages/home'
+import { intruderEn } from './messages/intruder'
 import { loginEn } from './messages/login'
 import { monitorEn } from './messages/monitor'
 import { monitorDetailEn } from './messages/monitorDetail'
@@ -16,6 +17,7 @@ export const en = {
   checkReason: checkReasonEn,
   errors: errorsEn,
   login: loginEn,
+  intruder: intruderEn,
   home: homeEn,
   monitor: monitorEn,
   monitorDetail: monitorDetailEn,

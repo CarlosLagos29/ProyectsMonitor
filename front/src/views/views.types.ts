@@ -13,6 +13,7 @@ export interface LoginData {
   serverFieldErrors: Record<string, string>
   loggingIn: boolean
   loginError: ErrorMessage | null
+  failedAttempts: number
   enteringAsGuest: boolean
   guestError: ErrorMessage | null
   guestWaitSeconds: number

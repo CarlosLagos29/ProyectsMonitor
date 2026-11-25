@@ -3,6 +3,7 @@ import { commonEs } from './messages/common'
 import { errorsEs } from './messages/errors'
 import { headerEs } from './messages/header'
 import { homeEs } from './messages/home'
+import { intruderEs } from './messages/intruder'
 import { loginEs } from './messages/login'
 import { monitorEs } from './messages/monitor'
 import { monitorDetailEs } from './messages/monitorDetail'
@@ -16,6 +17,7 @@ export const es = {
   checkReason: checkReasonEs,
   errors: errorsEs,
   login: loginEs,
+  intruder: intruderEs,
   home: homeEs,
   monitor: monitorEs,
   monitorDetail: monitorDetailEs,
