@@ -23,7 +23,6 @@ class HealthCheckService(private val redirectFollower: RedirectFollower) {
             val followed = redirectFollower.execute(headRequest(target))
             HealthCheckMapper.fromResponse(followed, elapsedMs(start), nowMillis())
         } catch (e: FollowFailedException) {
-            LOG.debug("Check of {} failed at {}: {}", target, e.lastUrl, e.cause.toString())
             HealthCheckMapper.fromFailure(e, elapsedMs(start), nowMillis())
         }
 
@@ -47,5 +46,5 @@ class HealthCheckService(private val redirectFollower: RedirectFollower) {
         .header("Accept", "*/*")
         .build()
 
-    private fun elapsedMs(start: Long): Long = Duration.ofNanos(System.nanoTime() - start).toMillis()
+    private fun elapsedMs(start: Long): Int = Duration.ofNanos(System.nanoTime() - start).toMillis().toInt()
 }

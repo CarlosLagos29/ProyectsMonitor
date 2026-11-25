@@ -22,7 +22,7 @@ class MonitorChecker(
     private val monitorRepository: MonitorRepository,
     private val checkResultRepository: CheckResultRepository,
     private val transactionTemplate: TransactionTemplate,
-    private val appProperties: AppProperties,
+    appProperties: AppProperties,
     checkProperties: HealthCheckProperties,
 ) {
 
@@ -31,6 +31,7 @@ class MonitorChecker(
         const val MAX_CACHED_URLS = 10_000L
     }
 
+    private val checkInterval = appProperties.limits.checkInterval
     private val hostLimiter = KeyedRateLimiter("host", checkProperties.perHost)
     private val recentResults: Cache<String, HealthCheckResult> = Caffeine.newBuilder()
         .expireAfterWrite(checkProperties.resultTtl)
@@ -64,21 +65,15 @@ class MonitorChecker(
 
     private fun record(monitorId: UUID, result: HealthCheckResult): CheckResult? {
         val monitor = monitorRepository.findById(monitorId).orElse(null) ?: return null
-        val checkedAt = result.checkedAt
-        if (monitor.lastCheckedAt?.isBefore(checkedAt) == false) {
+        if (monitor.lastCheckedAt?.isBefore(result.checkedAt) == false) {
             return checkResultRepository.findFirstByMonitorIdOrderByCheckedAtDesc(monitor.id)
         }
         val previousStatus = monitor.lastStatus
-        monitor.lastStatus = result.status
-        monitor.lastReason = result.reason
-        monitor.lastHttpStatus = result.httpStatus
-        monitor.lastLatencyMs = result.latencyMs.toInt()
-        monitor.lastCheckedAt = checkedAt
-        monitor.nextCheckAt = checkedAt.plus(appProperties.limits.checkInterval)
+        MonitorMapper.toChecked(monitor, result, checkInterval)
         LOG.info("Monitor checked: id={} status={} reason={}", monitor.id, result.status, result.reason)
         if (previousStatus != null && previousStatus != result.status) {
             LOG.warn("Monitor status changed: id={} from={} to={}", monitor.id, previousStatus, result.status)
         }
-        return checkResultRepository.save(MonitorMapper.toNewResult(monitor, result, checkedAt))
+        return checkResultRepository.save(MonitorMapper.toNewResult(monitor, result))
     }
 }

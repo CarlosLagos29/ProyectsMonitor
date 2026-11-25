@@ -22,6 +22,10 @@ object UrlNormalizer {
         val url = (if (scheme == null) "https://$trimmed" else trimmed).toHttpUrlOrNull()
             ?: throw InvalidUrlException("Malformed URL")
 
+        if (url.username.isNotEmpty() || url.password.isNotEmpty()) {
+            throw InvalidUrlException("URLs with credentials are not allowed")
+        }
+
         if (!isIpLiteral(url.host) && !isDomain(url.host)) {
             throw InvalidUrlException("Host ${url.host} is not a valid domain")
         }

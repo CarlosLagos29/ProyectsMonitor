@@ -103,7 +103,7 @@ class MonitorService(
         val now = nowMillis()
         val current = findManageable(id, user, now)
         rejectPublic(request.isPublic, current, user)
-        val updated = monitorRepository.save(MonitorMapper.toUpdated(current, request, now))
+        val updated = MonitorMapper.toUpdated(current, request, now)
         LOG.info("Monitor updated: id={} enabled={} isPublic={}", updated.id, updated.enabled, updated.isPublic)
         return viewOf(updated, user, now)
     }
@@ -123,11 +123,7 @@ class MonitorService(
     }
 
     private fun reserveGuestSlot(guestId: UUID, now: Instant) {
-        monitorRepository.findByOwnerId(guestId)?.let { existing ->
-            if (existing.isActiveGuest(now)) throw monitorLimitReached()
-            monitorRepository.delete(existing)
-            monitorRepository.flush()
-        }
+        if (monitorRepository.existsByOwnerId(guestId)) throw monitorLimitReached()
         if (monitorRepository.countActiveGuestMonitors(now) >= limits.guest.maxActive) {
             val retryAfter = monitorRepository.findOldestGuestExpiry(now)?.let { Duration.between(now, it) }
             LOG.warn("Guest capacity reached: max={}", limits.guest.maxActive)

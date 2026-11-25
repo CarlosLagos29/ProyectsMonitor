@@ -24,6 +24,7 @@ import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.dto.UptimeResponse
 import okhttp3.HttpUrl
 import org.springframework.data.domain.Page
+import java.time.Duration
 import java.time.Instant
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -48,13 +49,22 @@ object MonitorMapper {
         updatedAt = now
     }
 
-    fun toNewResult(monitor: Monitor, result: HealthCheckResult, checkedAt: Instant) = CheckResult(
+    fun toChecked(current: Monitor, result: HealthCheckResult, checkInterval: Duration) = current.apply {
+        lastStatus = result.status
+        lastReason = result.reason
+        lastHttpStatus = result.httpStatus
+        lastLatencyMs = result.latencyMs
+        lastCheckedAt = result.checkedAt
+        nextCheckAt = result.checkedAt.plus(checkInterval)
+    }
+
+    fun toNewResult(monitor: Monitor, result: HealthCheckResult) = CheckResult(
         monitor = monitor,
-        checkedAt = checkedAt,
+        checkedAt = result.checkedAt,
         status = result.status,
         reason = result.reason,
         httpStatus = result.httpStatus,
-        latencyMs = result.latencyMs.toInt(),
+        latencyMs = result.latencyMs,
         finalUrl = result.finalUrl,
         redirects = result.redirects,
     )

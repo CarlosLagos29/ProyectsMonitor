@@ -8,7 +8,7 @@ data class HealthCheckResult(
     val finalUrl: String,
     val status: HealthStatus,
     val httpStatus: Int,
-    val latencyMs: Long,
+    val latencyMs: Int,
     val redirects: Int,
     val reason: HealthReason,
     val checkedAt: Instant,
