@@ -18,6 +18,7 @@
       </p>
       <div class="ml-auto flex items-center gap-2">
         <LanguageSwitch />
+        <AmbienceToggle />
         <span
           v-if="isActive"
           class="chip min-h-11 font-cam text-[18px] uppercase max-sm:min-h-9 max-sm:text-[16px]"
@@ -46,11 +47,12 @@ import { mapActions, mapState } from 'pinia'
 import { useMonitorsStore } from '@/stores/monitors'
 import { useSessionStore } from '@/stores/session'
 
+import AmbienceToggle from './AmbienceToggle.vue'
 import LanguageSwitch from './LanguageSwitch.vue'
 
 export default {
   name: 'AppHeader',
-  components: { Cctv, LanguageSwitch, LogOut },
+  components: { AmbienceToggle, Cctv, LanguageSwitch, LogOut },
   computed: {
     ...mapState(useSessionStore, ['isActive', 'isAdmin']),
     ...mapState(useMonitorsStore, ['page']),
