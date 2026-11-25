@@ -13,7 +13,6 @@ import dev.projectsmonitor.monitor.dto.MonitorListQuery
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
 import dev.projectsmonitor.monitor.dto.MonitorScope
-import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.mapper.MonitorMapper
 import dev.projectsmonitor.ratelimit.KeyedRateLimiter
@@ -64,15 +63,6 @@ class MonitorService(
     fun get(id: UUID, user: CurrentUser): MonitorResponse {
         val now = nowMillis()
         return viewOf(findVisible(id, user, now), user, now)
-    }
-
-    @Transactional(readOnly = true)
-    fun stats(id: UUID, user: CurrentUser): MonitorStatsResponse {
-        val now = nowMillis()
-        val from = now.minus(retention)
-        val monitor = findVisible(id, user, now)
-        val counts = checkResultRepository.countByStatus(monitor.id, from)
-        return MonitorMapper.toStats(from, now, counts, checkResultRepository.findUpLatency(monitor.id, from))
     }
 
     @Transactional(readOnly = true)

@@ -9,11 +9,7 @@ import java.util.UUID
 
 data class UptimeCount(val monitorId: UUID, val checks: Long, val upChecks: Long)
 
-data class StatusCount(val status: HealthStatus, val checks: Long)
-
 data class RecentCheck(val monitorId: UUID, val checkedAt: Instant, val status: HealthStatus, val latencyMs: Int)
-
-data class LatencyStats(val avgMs: Double?, val p95Ms: Int?)
 
 interface CheckResultRepository : JpaRepository<CheckResult, Long> {
 
@@ -56,29 +52,6 @@ interface CheckResultRepository : JpaRepository<CheckResult, Long> {
         """,
     )
     fun findRecent(monitorIds: Collection<UUID>, from: Instant, perMonitor: Int): List<RecentCheck>
-
-    @Query(
-        """
-        select new dev.projectsmonitor.monitor.StatusCount(r.status, count(r))
-        from CheckResult r
-        where r.monitor.id = :monitorId and r.checkedAt >= :from
-        group by r.status
-        """,
-    )
-    fun countByStatus(monitorId: UUID, from: Instant): List<StatusCount>
-
-    @Query(
-        """
-        select new dev.projectsmonitor.monitor.LatencyStats(
-            avg(r.latencyMs),
-            percentile_disc(0.95) within group (order by r.latencyMs)
-        )
-        from CheckResult r
-        where r.monitor.id = :monitorId and r.checkedAt >= :from
-            and r.status = dev.projectsmonitor.common.enums.HealthStatus.UP
-        """,
-    )
-    fun findUpLatency(monitorId: UUID, from: Instant): LatencyStats
 
     @Modifying
     @Query("delete from CheckResult r where r.checkedAt < :before")

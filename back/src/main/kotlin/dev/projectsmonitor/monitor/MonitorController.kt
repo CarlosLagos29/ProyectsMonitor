@@ -7,7 +7,6 @@ import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
 import dev.projectsmonitor.monitor.dto.MonitorListQuery
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
-import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -77,13 +76,6 @@ class MonitorController(private val monitorService: MonitorService) {
     fun delete(@PathVariable id: UUID, user: CurrentUser) {
         LOG.info("Delete monitor: id={} user={}", id, user.id)
         monitorService.delete(id, user)
-    }
-
-    @GetMapping("/{id}/stats")
-    @MonitorStatsDocs
-    fun stats(@PathVariable id: UUID, user: CurrentUser): MonitorStatsResponse {
-        LOG.info("Monitor stats: id={} user={}", id, user.id)
-        return monitorService.stats(id, user)
     }
 
     @GetMapping("/{id}/results")
