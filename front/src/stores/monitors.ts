@@ -15,7 +15,6 @@ import { useSessionStore } from './session'
 import type { MonitorsState } from './stores.types'
 
 export const PAGE_SIZE = 6
-export const RECENT_CHECKS_MAX = 24
 
 let lastRequest = 0
 
@@ -24,6 +23,7 @@ export const useMonitorsStore = defineStore('monitors', {
     items: [],
     scope: null,
     currentCam: null,
+    detail: null,
     page: null,
     ownedCount: 0,
     loading: false,
@@ -99,9 +99,10 @@ export const useMonitorsStore = defineStore('monitors', {
       await this.fetchPage(0)
     },
 
-    async fetchOne(id: string): Promise<Monitor> {
+    async fetchDetail(id: string): Promise<Monitor> {
       const monitor = await getMonitor(id)
-      this.upsert(monitor)
+      this.detail = monitor
+      this.replace(monitor)
       return monitor
     },
 
@@ -113,43 +114,31 @@ export const useMonitorsStore = defineStore('monitors', {
 
     async update(id: string, changes: MonitorChanges): Promise<Monitor> {
       const monitor = await updateMonitor(id, changes, this.canSetPublic)
-      this.upsert(monitor)
+      this.replace(monitor)
       return monitor
     },
 
     async remove(id: string) {
       await deleteMonitor(id)
-      await this.fetchPage(0)
     },
 
     async checkNow(id: string) {
       const result = await checkMonitor(id)
-      const monitor = this.items.find((item) => item.id === id)
-      if (monitor) {
-        monitor.lastCheck = {
-          checkedAt: result.checkedAt,
-          status: result.status,
-          reason: result.reason,
-          httpStatus: result.httpStatus,
-          latencyMs: result.latencyMs,
-        }
-        const latest = monitor.recentChecks.at(-1)
-        if (!latest || result.checkedAt.getTime() > latest.checkedAt.getTime()) {
-          monitor.recentChecks = [
-            ...monitor.recentChecks,
-            { checkedAt: result.checkedAt, status: result.status, latencyMs: result.latencyMs },
-          ].slice(-RECENT_CHECKS_MAX)
-        }
+      try {
+        this.replace(await getMonitor(id))
+      } catch (error) {
+        console.error(error)
       }
       return result
     },
 
-    upsert(monitor: Monitor) {
+    replace(monitor: Monitor) {
       const index = this.items.findIndex((item) => item.id === monitor.id)
-      if (index === -1) {
-        this.items = [...this.items, monitor]
-      } else {
+      if (index !== -1) {
         this.items.splice(index, 1, monitor)
+      }
+      if (this.detail?.id === monitor.id) {
+        this.detail = monitor
       }
     },
   },

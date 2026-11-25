@@ -138,7 +138,7 @@
       :open="deleteOpen"
       :monitor="deleteTarget"
       @close="deleteOpen = false"
-      @deleted="deleteOpen = false"
+      @deleted="onDeleted"
     />
   </section>
 </template>
@@ -275,6 +275,10 @@ export default {
     openDelete(monitor: Monitor) {
       this.deleteTarget = monitor
       this.deleteOpen = true
+    },
+    onDeleted() {
+      this.deleteOpen = false
+      void this.fetchPage(0)
     },
     onSaved() {
       const created = this.editing === null

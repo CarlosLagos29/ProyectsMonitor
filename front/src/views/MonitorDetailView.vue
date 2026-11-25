@@ -170,13 +170,13 @@ export default {
     }
   },
   computed: {
-    ...mapState(useMonitorsStore, ['items', 'currentCam']),
+    ...mapState(useMonitorsStore, ['detail', 'currentCam']),
     ...mapState(useSessionStore, ['limits']),
     camLabel(): string {
       return formatCam(this.currentCam)
     },
     monitor(): Monitor | null {
-      return this.items.find((item) => item.id === this.id) ?? null
+      return this.detail?.id === this.id ? this.detail : null
     },
     newestFirst(): CheckResult[] {
       return this.series ? [...this.series.results].reverse() : []
@@ -223,13 +223,13 @@ export default {
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
   },
   methods: {
-    ...mapActions(useMonitorsStore, ['fetchOne']),
+    ...mapActions(useMonitorsStore, ['fetchDetail']),
     async load() {
       this.loading = true
       this.notFound = false
       this.error = null
       try {
-        await this.fetchOne(this.id)
+        await this.fetchDetail(this.id)
         void this.loadSeries()
       } catch (error) {
         const apiError = toApiError(error)
@@ -263,7 +263,7 @@ export default {
       if (document.hidden || this.notFound) {
         return
       }
-      this.fetchOne(this.id)
+      this.fetchDetail(this.id)
         .then(() => this.loadSeries())
         .catch(console.error)
     },

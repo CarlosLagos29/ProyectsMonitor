@@ -48,10 +48,10 @@
 import type { PropType } from 'vue'
 
 import type { HealthStatus, RecentCheck } from '@/api/api.types'
-import { RECENT_CHECKS_MAX } from '@/stores/monitors'
 
 import type { SparkPoint } from '../components.types'
 
+const RECENT_CHECKS_MAX = 24
 const WIDTH = 100
 const HEIGHT = 32
 const PADDING = 2

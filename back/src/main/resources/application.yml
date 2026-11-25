@@ -70,8 +70,8 @@ app:
       period: 1h
   check:
     timeouts:
-      connect: 2s
-      read: 2s
+      connect: 5s
+      read: 10s
       total: 10s
     max-redirects: 5
     allowed-ports: [80, 443]
