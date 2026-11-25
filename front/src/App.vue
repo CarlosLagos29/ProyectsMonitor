@@ -72,7 +72,7 @@ export default {
     onServerUp() {
       this.serverUp = true
       if (this.isActive && !this.limits) {
-        this.loadMe().catch(() => undefined)
+        this.loadMe().catch(console.error)
       }
     },
   },

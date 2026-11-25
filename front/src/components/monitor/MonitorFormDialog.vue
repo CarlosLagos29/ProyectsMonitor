@@ -29,7 +29,7 @@
             id="monitor-name"
             v-model="name"
             type="text"
-            maxlength="60"
+            :maxlength="NAME_MAX"
             class="field"
             :aria-invalid="Boolean(nameError)"
             :aria-describedby="nameError ? 'monitor-name-error' : undefined"
@@ -122,6 +122,7 @@ import { describeError, toApiError } from '@/api/errors'
 import ToggleSwitch from '@/components/form/ToggleSwitch.vue'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
 import { useMonitorsStore } from '@/stores/monitors'
+import { formatCam } from '@/utils/cam'
 
 import type { MonitorFormData } from '../components.types'
 
@@ -160,6 +161,7 @@ export default {
   },
   computed: {
     ...mapState(useMonitorsStore, ['canSetPublic']),
+    NAME_MAX: () => NAME_MAX,
     isEdit(): boolean {
       return this.monitor !== null
     },
@@ -169,7 +171,7 @@ export default {
       }
       return this.cam === null
         ? this.$t('monitor.form.edit')
-        : this.$t('monitor.form.editCam', { cam: `CAM ${String(this.cam).padStart(2, '0')}` })
+        : this.$t('monitor.form.editCam', { cam: formatCam(this.cam) })
     },
     submitText(): string {
       if (this.saving) {
@@ -255,7 +257,7 @@ export default {
       this.submitted = true
       this.fieldErrors = {}
       this.error = null
-      if (this.nameError || this.urlError || this.name.trim().length > NAME_MAX) {
+      if (this.nameError || this.urlError) {
         return
       }
       this.saving = true

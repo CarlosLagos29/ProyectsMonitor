@@ -128,16 +128,14 @@ import DeleteMonitorDialog from '@/components/monitor/DeleteMonitorDialog.vue'
 import LatencyChart from '@/components/monitor/LatencyChart.vue'
 import MonitorCard from '@/components/monitor/MonitorCard.vue'
 import MonitorFormDialog from '@/components/monitor/MonitorFormDialog.vue'
+import { DEFAULT_POLL_SECONDS, NOISE } from '@/constants'
 import { useMonitorsStore } from '@/stores/monitors'
 import { useSessionStore } from '@/stores/session'
+import { formatCam } from '@/utils/cam'
 
 import NotFoundView from './NotFoundView.vue'
 
 import type { MonitorDetailData } from './views.types'
-
-const DEFAULT_POLL_SECONDS = 600
-const NOISE_DOWN = 0.32
-const NOISE_EMPTY = 0.14
 
 export default {
   name: 'MonitorDetailView',
@@ -175,7 +173,7 @@ export default {
     ...mapState(useMonitorsStore, ['items', 'currentCam']),
     ...mapState(useSessionStore, ['limits']),
     camLabel(): string {
-      return this.currentCam === null ? 'CAM ??' : `CAM ${String(this.currentCam).padStart(2, '0')}`
+      return formatCam(this.currentCam)
     },
     monitor(): Monitor | null {
       return this.items.find((item) => item.id === this.id) ?? null
@@ -203,9 +201,9 @@ export default {
     },
     chartNoise(): number {
       if (this.monitor?.lastCheck?.status === 'DOWN') {
-        return NOISE_DOWN
+        return NOISE.down
       }
-      return this.series?.results.length ? 0 : NOISE_EMPTY
+      return this.series?.results.length ? 0 : NOISE.empty
     },
   },
   watch: {
@@ -267,7 +265,7 @@ export default {
       }
       this.fetchOne(this.id)
         .then(() => this.loadSeries())
-        .catch(() => undefined)
+        .catch(console.error)
     },
     onVisibilityChange() {
       if (!document.hidden) {

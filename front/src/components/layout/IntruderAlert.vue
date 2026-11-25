@@ -17,7 +17,7 @@
     <div v-else class="relative size-full">
       <CameraFeed
         class="size-full rounded-none! border-0!"
-        :noise="0.6"
+        :noise="NOISE.intruder"
         rec="on"
         label="Cam 00"
         :stamp="stamp"
@@ -37,6 +37,8 @@
 
 <script lang="ts">
 import { RotateCw } from 'lucide-vue-next'
+
+import { NOISE } from '@/constants'
 
 import type { IntruderAlertData } from '../components.types'
 import CameraFeed from './CameraFeed.vue'
@@ -62,6 +64,9 @@ export default {
       phase: 'scare',
       scareTimer: undefined,
     }
+  },
+  computed: {
+    NOISE: () => NOISE,
   },
   watch: {
     open(open: boolean) {
@@ -89,8 +94,8 @@ export default {
       const gain = context.createGain()
       gain.gain.value = SCREAM_GAIN
       context.createMediaElementSource(audio).connect(gain).connect(context.destination)
-      context.resume().catch(() => undefined)
-      audio.play().catch(() => undefined)
+      context.resume().catch(console.error)
+      audio.play().catch(console.error)
     },
     reopen() {
       if (this.open) {

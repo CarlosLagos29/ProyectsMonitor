@@ -13,6 +13,8 @@
 </template>
 
 <script lang="ts">
+import { NOISE } from '@/constants'
+
 import type { StaticNoiseData } from '../components.types'
 
 let nextId = 0
@@ -22,7 +24,7 @@ export default {
   props: {
     opacity: {
       type: Number,
-      default: 0.32,
+      default: NOISE.down,
     },
   },
   data(): StaticNoiseData {

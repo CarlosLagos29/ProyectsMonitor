@@ -134,8 +134,10 @@ import { mapActions, mapState } from 'pinia'
 import type { HealthStatus, Monitor } from '@/api/api.types'
 import { describeError, toApiError } from '@/api/errors'
 import CameraFeed from '@/components/layout/CameraFeed.vue'
+import { NOISE, TICK_MS } from '@/constants'
 import { useMonitorsStore } from '@/stores/monitors'
 import { useSessionStore } from '@/stores/session'
+import { formatCam } from '@/utils/cam'
 import { formatElapsed, formatRemaining, formatStamp } from '@/utils/time'
 
 import type { MonitorCardData } from '../components.types'
@@ -143,10 +145,6 @@ import CooldownButton from './CooldownButton.vue'
 import MonitorSparkline from './MonitorSparkline.vue'
 import StatusBadge from './StatusBadge.vue'
 import UptimeBattery from './UptimeBattery.vue'
-
-const TICK_MS = 1_000
-const NOISE_DOWN = 0.32
-const NOISE_WAITING = 0.18
 
 export default {
   name: 'MonitorCard',
@@ -198,7 +196,7 @@ export default {
       return this.isAdmin || this.monitor.owned
     },
     camLabel(): string {
-      return this.cam === null ? 'CAM ??' : `CAM ${String(this.cam).padStart(2, '0')}`
+      return formatCam(this.cam)
     },
     status(): HealthStatus | null {
       return this.monitor.lastCheck?.status ?? null
@@ -229,10 +227,10 @@ export default {
     },
     feedNoise(): number {
       if (this.status === 'DOWN') {
-        return NOISE_DOWN
+        return NOISE.down
       }
       if (this.status === null) {
-        return NOISE_WAITING
+        return NOISE.waiting
       }
       return 0
     },

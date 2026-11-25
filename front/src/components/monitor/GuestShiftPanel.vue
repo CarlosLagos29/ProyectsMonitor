@@ -33,11 +33,10 @@
 import type { PropType } from 'vue'
 
 import type { Monitor } from '@/api/api.types'
+import { TICK_MS } from '@/constants'
 import { formatClock, formatHoursMinutesSeconds } from '@/utils/time'
 
 import type { GuestShiftData } from '../components.types'
-
-const TICK_MS = 1_000
 
 export default {
   name: 'GuestShiftPanel',

@@ -4,7 +4,8 @@ import { toApiError } from './errors'
 
 export const API_PREFIX = '/api/v1'
 
-const API_TOKEN_PATHS = [`${API_PREFIX}/auth/guest`, `${API_PREFIX}/auth/login`]
+export const AUTH_PATH = `${API_PREFIX}/auth`
+const API_TOKEN_PATHS = [`${AUTH_PATH}/guest`, `${AUTH_PATH}/login`]
 
 interface HttpHooks {
   getToken: () => string | null
