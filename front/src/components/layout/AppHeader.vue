@@ -17,14 +17,14 @@
         Live · {{ $t('header.cameras', cameras) }}
       </p>
       <div class="ml-auto flex items-center gap-2">
-        <LanguageSwitch />
-        <AmbienceToggle />
         <span
           v-if="isActive"
           class="chip min-h-11 font-cam text-[18px] uppercase max-sm:min-h-9 max-sm:text-[16px]"
         >
           {{ $t('header.shift', { role: isAdmin ? $t('header.admin') : $t('header.guest') }) }}
         </span>
+        <LanguageSwitch />
+        <AmbienceToggle />
         <button
           v-if="isActive"
           type="button"
