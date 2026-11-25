@@ -21,7 +21,7 @@ import type { AmbienceToggleData } from '../components.types'
 const SOURCE = '/vhs-static.mp3'
 const STORAGE_KEY = 'ambience'
 const VOLUME = 1
-const UNLOCK_EVENTS = ['pointerdown', 'keydown'] as const
+const UNLOCK_EVENTS = ['click', 'touchend', 'keydown'] as const
 
 function readEnabled(): boolean {
   try {
