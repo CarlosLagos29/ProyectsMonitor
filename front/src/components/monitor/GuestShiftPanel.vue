@@ -1,5 +1,5 @@
 <template>
-  <aside class="panel flex flex-col gap-4 p-5">
+  <aside class="panel flex flex-col justify-center gap-4 p-5">
     <h2 class="cam-label text-[24px] text-muted-foreground">{{ $t('monitor.shift.title') }}</h2>
     <p
       role="timer"

@@ -1,12 +1,13 @@
 <template>
   <header class="sticky top-0 z-20 border-b border-border bg-card">
-    <div class="mx-auto flex max-w-300 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.25">
+    <div class="mx-auto flex max-w-300 items-center gap-x-4 px-4 py-2.25">
       <RouterLink
+        v-if="!$route.meta.public"
         :to="{ name: 'home' }"
         class="flex min-h-11 items-center gap-2 font-cam text-[28px] leading-none text-foreground uppercase"
       >
         <Cctv :size="24" class="text-primary" aria-hidden="true" />
-        Projects Monitor
+        <span class="max-sm:sr-only">Projects Monitor</span>
       </RouterLink>
       <p
         v-if="cameras !== null"
@@ -17,17 +18,20 @@
       </p>
       <div class="ml-auto flex items-center gap-2">
         <LanguageSwitch />
-        <span v-if="isActive" class="chip min-h-11 font-cam text-[18px] uppercase">
+        <span
+          v-if="isActive"
+          class="chip min-h-11 font-cam text-[18px] uppercase max-sm:min-h-9 max-sm:text-[16px]"
+        >
           {{ $t('header.shift', { role: isAdmin ? $t('header.admin') : $t('header.guest') }) }}
         </span>
         <button
           v-if="isActive"
           type="button"
-          class="btn btn-secondary max-sm:size-11 max-sm:px-0"
+          class="btn btn-secondary max-sm:size-9 max-sm:min-h-9 max-sm:px-0"
           :aria-label="$t('header.logout')"
           @click="logout"
         >
-          <LogOut :size="18" aria-hidden="true" />
+          <LogOut :size="16" aria-hidden="true" />
           <span class="max-sm:sr-only">{{ $t('header.logout') }}</span>
         </button>
       </div>

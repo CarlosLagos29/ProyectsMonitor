@@ -39,11 +39,11 @@
       <h2 class="text-lg font-semibold">{{ $t('login.guestTitle') }}</h2>
       <button
         type="button"
-        class="btn btn-primary min-h-15 w-full text-[30px]"
+        class="btn btn-primary min-h-13.5 w-full text-[27px]"
         :disabled="enteringAsGuest || guestBlocked"
         @click="enterAsGuest"
       >
-        <Cctv :size="26" aria-hidden="true" />
+        <Cctv :size="23" aria-hidden="true" />
         {{ enteringAsGuest ? $t('login.connecting') : $t('login.guestStart') }}
       </button>
       <p class="text-sm text-muted-foreground">
@@ -55,7 +55,9 @@
 
     <form class="space-y-4" novalidate @submit.prevent="submitLogin">
       <div class="space-y-1">
-        <label for="login-email" class="text-sm font-medium">{{ $t('login.email') }}</label>
+        <label for="login-email" class="mb-1 block text-sm font-medium">{{
+          $t('login.email')
+        }}</label>
         <input
           id="login-email"
           v-model.trim="email"
@@ -71,7 +73,9 @@
         </p>
       </div>
       <div class="space-y-1">
-        <label for="login-password" class="text-sm font-medium">{{ $t('login.password') }}</label>
+        <label for="login-password" class="mb-1 block text-sm font-medium">{{
+          $t('login.password')
+        }}</label>
         <div class="flex gap-2">
           <input
             id="login-password"
@@ -105,10 +109,6 @@
         {{ loggingIn ? $t('login.submitting') : $t('login.submit') }}
       </button>
     </form>
-
-    <div class="flex justify-center pt-2">
-      <LanguageSwitch />
-    </div>
   </section>
 </template>
 
@@ -119,7 +119,6 @@ import { mapActions, mapState } from 'pinia'
 import { describeError, toApiError } from '@/api/errors'
 import CameraFeed from '@/components/layout/CameraFeed.vue'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
-import LanguageSwitch from '@/components/layout/LanguageSwitch.vue'
 import { useSessionStore } from '@/stores/session'
 import { formatClock, formatCountdown } from '@/utils/time'
 
@@ -130,7 +129,7 @@ const DEFAULT_CAPACITY_WAIT_SECONDS = 60
 
 export default {
   name: 'LoginView',
-  components: { CameraFeed, Cctv, CircleAlert, Eye, EyeOff, InfoNotice, LanguageSwitch },
+  components: { CameraFeed, Cctv, CircleAlert, Eye, EyeOff, InfoNotice },
   data(): LoginData {
     return {
       email: '',

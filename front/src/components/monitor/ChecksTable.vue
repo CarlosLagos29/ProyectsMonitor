@@ -1,6 +1,16 @@
 <template>
   <div class="space-y-3">
-    <div class="overflow-x-auto rounded-sm border border-border">
+    <ul
+      class="divide-y divide-border rounded-sm border border-border text-sm sm:hidden"
+      :aria-label="$t('monitorDetail.table.caption')"
+    >
+      <ChecksListItem
+        v-for="result in visibleResults"
+        :key="result.checkedAt.getTime()"
+        :result="result"
+      />
+    </ul>
+    <div class="hidden overflow-x-auto rounded-sm border border-border sm:block">
       <table class="w-full min-w-155 text-sm">
         <caption class="sr-only">
           {{
@@ -22,29 +32,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr
+          <ChecksTableRow
             v-for="result in visibleResults"
             :key="result.checkedAt.getTime()"
-            class="border-t border-border odd:bg-background even:bg-muted"
-          >
-            <td class="px-4 py-2 font-mono whitespace-nowrap tabular-nums">
-              {{ formatStamp(result.checkedAt) }}
-            </td>
-            <td class="px-4 py-2">
-              <StatusBadge :status="result.status" small />
-            </td>
-            <td class="px-4 py-2 text-right font-mono whitespace-nowrap tabular-nums">
-              {{ latencyText(result) }}
-            </td>
-            <td class="px-4 py-2">
-              <span v-if="result.httpStatus > 0" class="font-mono">{{ result.httpStatus }} · </span>
-              {{ $t(`checkReason.${result.reason}`) }}
-            </td>
-          </tr>
+            :result="result"
+          />
         </tbody>
       </table>
     </div>
-    <button v-if="hasMore" type="button" class="btn btn-secondary" @click="showMore">
+    <button
+      v-if="hasMore"
+      type="button"
+      class="btn btn-secondary max-sm:min-h-9 max-sm:w-full max-sm:px-3 max-sm:text-[17px]"
+      @click="showMore"
+    >
       {{ $t('monitorDetail.table.more') }}
     </button>
   </div>
@@ -54,16 +55,16 @@
 import type { PropType } from 'vue'
 
 import type { CheckResult } from '@/api/api.types'
-import { formatStamp } from '@/utils/time'
 
 import type { ChecksTableData } from '../components.types'
-import StatusBadge from './StatusBadge.vue'
+import ChecksListItem from './ChecksListItem.vue'
+import ChecksTableRow from './ChecksTableRow.vue'
 
 const PAGE_ROWS = 20
 
 export default {
   name: 'ChecksTable',
-  components: { StatusBadge },
+  components: { ChecksListItem, ChecksTableRow },
   props: {
     results: {
       type: Array as PropType<CheckResult[]>,
@@ -84,12 +85,8 @@ export default {
     },
   },
   methods: {
-    formatStamp,
     showMore() {
       this.visibleRows += PAGE_ROWS
-    },
-    latencyText(result: CheckResult): string {
-      return result.status === 'REJECTED' ? '—' : `${result.latencyMs} ms`
     },
   },
 }

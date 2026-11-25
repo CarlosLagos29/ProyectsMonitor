@@ -3,9 +3,13 @@
   <section v-else class="space-y-6">
     <RouterLink
       :to="{ name: 'home' }"
-      class="inline-flex min-h-11 items-center gap-2 font-cam text-[22px] text-primary uppercase"
+      class="group inline-flex min-h-11 items-center gap-2 font-cam text-[22px] text-primary uppercase underline-offset-4 hover:underline"
     >
-      <ArrowLeft :size="18" aria-hidden="true" />
+      <ArrowLeft
+        :size="18"
+        class="transition-transform group-hover:-translate-x-1"
+        aria-hidden="true"
+      />
       {{ $t('monitorDetail.back') }}
     </RouterLink>
 

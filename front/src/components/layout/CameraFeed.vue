@@ -43,7 +43,7 @@
       >
         {{ message }}
       </p>
-      <p v-if="detail" class="max-w-md text-sm text-muted-foreground">{{ detail }}</p>
+      <p v-if="detail" class="max-w-md text-sm text-balance text-muted-foreground">{{ detail }}</p>
     </div>
   </div>
 </template>

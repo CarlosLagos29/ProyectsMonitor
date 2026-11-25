@@ -4,7 +4,7 @@
       v-for="code in locales"
       :key="code"
       type="button"
-      class="min-h-11 min-w-11 border border-border px-2 font-cam text-[20px] leading-none first:rounded-l-sm last:rounded-r-sm"
+      class="min-h-11 min-w-11 border border-border px-2 font-cam text-[20px] max-sm:min-h-9 max-sm:min-w-9 max-sm:text-[17px] leading-none first:rounded-l-sm last:rounded-r-sm"
       :class="
         isCurrent(code)
           ? 'border-primary bg-primary text-primary-foreground'

@@ -48,11 +48,13 @@
 
         <div class="mt-auto flex flex-wrap items-end justify-between gap-3">
           <UptimeBattery :percentage="monitor.uptime.percentage" :checks="monitor.uptime.checks" />
-          <div class="flex min-w-0 flex-col items-end gap-2">
-            <p v-if="monitor.lastCheck" class="text-xs text-muted-foreground">
+          <div
+            class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 sm:w-auto sm:flex-col sm:items-end"
+          >
+            <p v-if="monitor.lastCheck" class="shrink-0 text-xs text-muted-foreground">
               {{ $t('monitor.card.lastCheck', { time: lastCheckedText }) }}
             </p>
-            <ul class="flex flex-wrap justify-end gap-1.5">
+            <ul class="ml-auto flex min-w-0 flex-wrap justify-end gap-1.5">
               <li v-if="!monitor.enabled" class="chip">
                 <Pause :size="12" aria-hidden="true" />
                 {{ $t('monitor.card.paused') }}
@@ -67,11 +69,13 @@
                 {{ $t('monitor.card.fromGuest') }}
               </li>
               <li v-if="!canManage" class="chip">{{ $t('monitor.card.readOnly') }}</li>
-              <li v-if="expiresText" class="chip border-warning/60 text-warning">
+            </ul>
+            <p v-if="expiresText" class="flex w-full sm:w-auto">
+              <span class="chip border-warning/60 whitespace-nowrap text-warning">
                 <Clock :size="12" aria-hidden="true" />
                 {{ expiresText }}
-              </li>
-            </ul>
+              </span>
+            </p>
           </div>
         </div>
 
@@ -84,14 +88,14 @@
 
     <footer v-if="canManage" class="flex gap-2 border-t border-border p-3">
       <CooldownButton
-        class="min-w-0 flex-1"
+        class="min-w-0 flex-1 whitespace-nowrap max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
         :checking="checking"
         :cooldown-seconds="cooldownSeconds"
         @check="runCheck"
       />
       <button
         type="button"
-        class="btn btn-secondary btn-icon"
+        class="btn btn-secondary btn-icon max-sm:size-9 max-sm:min-h-9"
         :aria-label="toggleText"
         :title="toggleText"
         :disabled="toggling"
@@ -102,7 +106,7 @@
       </button>
       <button
         type="button"
-        class="btn btn-secondary btn-icon"
+        class="btn btn-secondary btn-icon max-sm:size-9 max-sm:min-h-9"
         :aria-label="$t('monitor.card.edit')"
         :title="$t('monitor.card.edit')"
         @click="$emit('edit', monitor)"
@@ -111,7 +115,7 @@
       </button>
       <button
         type="button"
-        class="btn btn-danger btn-icon"
+        class="btn btn-danger btn-icon max-sm:size-9 max-sm:min-h-9"
         :aria-label="$t('common.delete')"
         :title="$t('common.delete')"
         @click="$emit('delete', monitor)"

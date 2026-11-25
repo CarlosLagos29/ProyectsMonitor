@@ -22,7 +22,7 @@
 
       <div class="flex-1 space-y-4 px-5 py-4">
         <div class="space-y-1">
-          <label for="monitor-name" class="text-sm font-medium">{{
+          <label for="monitor-name" class="mb-1 block text-sm font-medium">{{
             $t('monitor.form.name')
           }}</label>
           <input
@@ -41,7 +41,9 @@
         </div>
 
         <div class="space-y-1">
-          <label for="monitor-url" class="text-sm font-medium">{{ $t('monitor.form.url') }}</label>
+          <label for="monitor-url" class="mb-1 block text-sm font-medium">{{
+            $t('monitor.form.url')
+          }}</label>
           <div class="relative">
             <input
               id="monitor-url"
@@ -91,10 +93,18 @@
       </div>
 
       <footer class="flex justify-end gap-2 border-t border-border px-5 py-3">
-        <button type="button" class="btn btn-secondary" @click="close">
+        <button
+          type="button"
+          class="btn btn-secondary max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
+          @click="close"
+        >
           {{ $t('common.cancel') }}
         </button>
-        <button type="submit" class="btn btn-primary" :disabled="saving">
+        <button
+          type="submit"
+          class="btn btn-primary max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
+          :disabled="saving"
+        >
           {{ submitText }}
         </button>
       </footer>
