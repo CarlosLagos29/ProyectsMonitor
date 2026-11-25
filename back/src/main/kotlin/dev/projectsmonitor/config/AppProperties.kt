@@ -17,8 +17,8 @@ class AppProperties(
     @Valid val jwt: Jwt,
     @Valid val admin: Admin,
     @Valid val cors: Cors,
-    @Valid val limits: Limits,
-    @Valid val authRateLimit: AuthRateLimit,
+    val limits: Limits,
+    val authRateLimit: AuthRateLimit,
     val retention: Duration,
 ) {
 
@@ -42,7 +42,7 @@ class AppProperties(
         val allowedOrigins: List<String>,
     )
 
-    class Limits(val checkInterval: Duration, val manualCheckCooldown: Duration, @Valid val guest: GuestLimits)
+    class Limits(val checkInterval: Duration, val manualCheckCooldown: Duration, val guest: GuestLimits)
 
     class GuestLimits(val maxActive: Int, val manualChecks: RateLimit, val requests: RateLimit)
 

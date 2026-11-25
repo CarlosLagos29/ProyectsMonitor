@@ -3,29 +3,24 @@ package dev.projectsmonitor.monitor.mapper
 import dev.projectsmonitor.auth.CurrentUser
 import dev.projectsmonitor.check.HealthCheckMapper
 import dev.projectsmonitor.check.HealthCheckResult
-import dev.projectsmonitor.common.enums.HealthStatus
 import dev.projectsmonitor.monitor.CheckResult
-import dev.projectsmonitor.monitor.LatencyStats
 import dev.projectsmonitor.monitor.Monitor
 import dev.projectsmonitor.monitor.RecentCheck
-import dev.projectsmonitor.monitor.StatusCount
 import dev.projectsmonitor.monitor.UptimeCount
 import dev.projectsmonitor.monitor.dto.CheckResultResponse
 import dev.projectsmonitor.monitor.dto.CheckResultsResponse
 import dev.projectsmonitor.monitor.dto.CreateMonitorRequest
 import dev.projectsmonitor.monitor.dto.LastCheckResponse
-import dev.projectsmonitor.monitor.dto.LatencyResponse
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
-import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import dev.projectsmonitor.monitor.dto.PageResponse
 import dev.projectsmonitor.monitor.dto.RecentCheckResponse
 import dev.projectsmonitor.monitor.dto.UpdateMonitorRequest
 import dev.projectsmonitor.monitor.dto.UptimeResponse
 import okhttp3.HttpUrl
 import org.springframework.data.domain.Page
+import java.time.Duration
 import java.time.Instant
-import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 object MonitorMapper {
@@ -48,13 +43,22 @@ object MonitorMapper {
         updatedAt = now
     }
 
-    fun toNewResult(monitor: Monitor, result: HealthCheckResult, checkedAt: Instant) = CheckResult(
+    fun toChecked(current: Monitor, result: HealthCheckResult, checkInterval: Duration) = current.apply {
+        lastStatus = result.status
+        lastReason = result.reason
+        lastHttpStatus = result.httpStatus
+        lastLatencyMs = result.latencyMs
+        lastCheckedAt = result.checkedAt
+        nextCheckAt = result.checkedAt.plus(checkInterval)
+    }
+
+    fun toNewResult(monitor: Monitor, result: HealthCheckResult) = CheckResult(
         monitor = monitor,
-        checkedAt = checkedAt,
+        checkedAt = result.checkedAt,
         status = result.status,
         reason = result.reason,
         httpStatus = result.httpStatus,
-        latencyMs = result.latencyMs.toInt(),
+        latencyMs = result.latencyMs,
         finalUrl = result.finalUrl,
         redirects = result.redirects,
     )
@@ -87,18 +91,6 @@ object MonitorMapper {
             totalPages = page.totalPages,
         ),
     )
-
-    fun toStats(from: Instant, to: Instant, counts: List<StatusCount>, latency: LatencyStats): MonitorStatsResponse {
-        val checksByStatus = counts.associate { it.status to it.checks }
-        val byStatus = HealthStatus.entries.associateWith { checksByStatus[it] ?: 0L }
-        return MonitorStatsResponse(
-            from = from,
-            to = to,
-            uptime = toUptime(byStatus.values.sum(), byStatus.getValue(HealthStatus.UP)),
-            byStatus = byStatus,
-            latency = LatencyResponse(avgMs = latency.avgMs?.roundToInt(), p95Ms = latency.p95Ms),
-        )
-    }
 
     fun toResults(from: Instant, to: Instant, results: List<CheckResult>) = CheckResultsResponse(
         from = from,

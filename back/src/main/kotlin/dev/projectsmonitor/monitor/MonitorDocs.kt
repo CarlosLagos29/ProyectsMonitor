@@ -7,7 +7,6 @@ import dev.projectsmonitor.monitor.dto.CheckResultResponse
 import dev.projectsmonitor.monitor.dto.CheckResultsResponse
 import dev.projectsmonitor.monitor.dto.MonitorListResponse
 import dev.projectsmonitor.monitor.dto.MonitorResponse
-import dev.projectsmonitor.monitor.dto.MonitorStatsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -207,29 +206,6 @@ annotation class CheckMonitorDocs
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
-    summary = "Monitor stats",
-    description = "Summary of the last 24 hours: uptime, checks per status and latency. The latency only counts UP " +
-        "checks, since a timeout is not a latency. Same access as the monitor detail.",
-)
-@ApiResponse(
-    responseCode = "200",
-    description = "Stats of the last 24 hours.",
-    content = [
-        Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = MonitorStatsResponse::class),
-            examples = [ExampleObject(name = "Mostly up", value = STATS_EXAMPLE)],
-        ),
-    ],
-)
-@SessionExpiredDoc
-@MonitorNotFoundDoc
-@GuestRateLimitDoc
-annotation class MonitorStatsDocs
-
-@Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.RUNTIME)
-@Operation(
     summary = "Monitor results",
     description = "Every check of the last 24 hours, oldest first, for the latency chart and the status line. " +
         "About 144 points plus the manual checks, with gaps while the server was asleep. Same access as the " +
@@ -277,11 +253,6 @@ private const val CHECK_EXAMPLE = """
 {"checkedAt": "2026-11-10T14:00:00Z", "status": "UP", "reason": "SUCCESS",
  "message": "The site is up and responding", "httpStatus": 200, "latencyMs": 142,
  "finalUrl": "https://portfoliocarloslagos.netlify.app/", "redirects": 0}
-"""
-
-private const val STATS_EXAMPLE = """
-{"from": "2026-11-09T14:00:00Z", "to": "2026-11-10T14:00:00Z", "uptime": {"percentage": 98.6, "checks": 142},
- "byStatus": {"UP": 140, "DOWN": 2, "BLOCKED": 0, "REJECTED": 0}, "latency": {"avgMs": 180, "p95Ms": 410}}
 """
 
 private const val RESULTS_EXAMPLE = """

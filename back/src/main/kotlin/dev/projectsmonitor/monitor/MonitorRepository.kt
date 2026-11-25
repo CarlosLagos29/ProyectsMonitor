@@ -39,7 +39,7 @@ interface MonitorRepository : JpaRepository<Monitor, UUID> {
     )
     fun findGuestMonitors(now: Instant, pageable: Pageable): Page<Monitor>
 
-    fun findByOwnerId(ownerId: UUID): Monitor?
+    fun existsByOwnerId(ownerId: UUID): Boolean
 
     @Query("select count(m) from Monitor m where m.ownerId is not null and m.expiresAt > :now")
     fun countActiveGuestMonitors(now: Instant): Long

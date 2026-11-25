@@ -13,7 +13,7 @@ object HealthCheckMapper {
 
     private const val NO_RESPONSE = 0
 
-    fun fromResponse(followed: FollowedResponse, latencyMs: Long, checkedAt: Instant): HealthCheckResult {
+    fun fromResponse(followed: FollowedResponse, latencyMs: Int, checkedAt: Instant): HealthCheckResult {
         val reason = reasonFor(followed.code)
         return HealthCheckResult(
             finalUrl = followed.finalUrl.toString(),
@@ -26,7 +26,7 @@ object HealthCheckMapper {
         )
     }
 
-    fun fromFailure(failure: FollowFailedException, latencyMs: Long, checkedAt: Instant): HealthCheckResult {
+    fun fromFailure(failure: FollowFailedException, latencyMs: Int, checkedAt: Instant): HealthCheckResult {
         val reason = reasonFor(failure.cause)
         return HealthCheckResult(
             finalUrl = failure.lastUrl.toString(),

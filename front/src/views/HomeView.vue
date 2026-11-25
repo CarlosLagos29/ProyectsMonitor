@@ -48,7 +48,7 @@
           </div>
           <CameraFeed
             class="h-37.5 min-[720px]:h-42.5"
-            :noise="0.18"
+            :noise="NOISE.waiting"
             rec="off"
             :label="$t('common.feed.connecting')"
             :message="$t('common.feed.connectingMessage')"
@@ -62,7 +62,7 @@
       <div v-else-if="error" class="panel flex flex-col gap-4 border-destructive p-4">
         <CameraFeed
           class="min-h-50 flex-1"
-          :noise="0.32"
+          :noise="NOISE.down"
           rec="off"
           :label="$t('common.feed.noSignal')"
           :message="$t('common.feed.signalLost')"
@@ -79,7 +79,7 @@
       <CameraFeed
         v-else-if="!items.length"
         class="min-h-75"
-        :noise="0.14"
+        :noise="NOISE.empty"
         rec="off"
         label="Cam --"
         :message="$t('home.empty')"
@@ -138,7 +138,7 @@
       :open="deleteOpen"
       :monitor="deleteTarget"
       @close="deleteOpen = false"
-      @deleted="deleteOpen = false"
+      @deleted="onDeleted"
     />
   </section>
 </template>
@@ -148,6 +148,7 @@ import { ChevronLeft, ChevronRight, Plus, RotateCw } from 'lucide-vue-next'
 import { mapActions, mapState } from 'pinia'
 
 import type { Monitor, MonitorScope } from '@/api/api.types'
+import { DEFAULT_POLL_SECONDS, NOISE } from '@/constants'
 import CameraFeed from '@/components/layout/CameraFeed.vue'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
 import DeleteMonitorDialog from '@/components/monitor/DeleteMonitorDialog.vue'
@@ -160,7 +161,6 @@ import { useSessionStore } from '@/stores/session'
 
 import type { HomeData } from './views.types'
 
-const DEFAULT_POLL_SECONDS = 600
 const FIRST_CHECK_DELAY_MS = 70_000
 const SKELETONS = [1, 2]
 
@@ -203,6 +203,7 @@ export default {
       'totalPages',
     ]),
     SKELETONS: () => SKELETONS,
+    NOISE: () => NOISE,
     tabs(): { id: MonitorScope; label: string }[] {
       if (this.isGuest) {
         return [
@@ -248,22 +249,17 @@ export default {
     this.setCurrentCam(null)
     void this.fetchPage()
     const seconds = this.limits?.checkIntervalSeconds ?? DEFAULT_POLL_SECONDS
-    this.pollTimer = setInterval(() => this.poll(), seconds * 1_000)
-    document.addEventListener('visibilitychange', this.onVisibilityChange)
+    this.pollTimer = setInterval(() => this.refresh(), seconds * 1_000)
+    document.addEventListener('visibilitychange', this.refresh)
   },
   beforeUnmount() {
     clearInterval(this.pollTimer)
     clearTimeout(this.firstCheckTimer)
-    document.removeEventListener('visibilitychange', this.onVisibilityChange)
+    document.removeEventListener('visibilitychange', this.refresh)
   },
   methods: {
     ...mapActions(useMonitorsStore, ['fetchPage', 'setScope', 'setCurrentCam']),
-    poll() {
-      if (!document.hidden) {
-        void this.fetchPage()
-      }
-    },
-    onVisibilityChange() {
+    refresh() {
       if (!document.hidden) {
         void this.fetchPage()
       }
@@ -279,6 +275,10 @@ export default {
     openDelete(monitor: Monitor) {
       this.deleteTarget = monitor
       this.deleteOpen = true
+    },
+    onDeleted() {
+      this.deleteOpen = false
+      void this.fetchPage(0)
     },
     onSaved() {
       const created = this.editing === null

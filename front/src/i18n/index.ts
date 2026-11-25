@@ -18,7 +18,8 @@ function readStoredLocale(): AppLocale | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     return isAppLocale(stored) ? stored : null
-  } catch {
+  } catch (error) {
+    console.error(error)
     return null
   }
 }
@@ -43,7 +44,7 @@ export function setLocale(locale: AppLocale) {
   document.documentElement.lang = locale
   try {
     localStorage.setItem(STORAGE_KEY, locale)
-  } catch {
-    return
+  } catch (error) {
+    console.error(error)
   }
 }

@@ -15,7 +15,8 @@ Uptime monitoring app: register URLs, check them periodically, keep the history 
 Requirements: Docker and [Task](https://taskfile.dev).
 
 ```bash
-cp .env.example .env
+cp back/.env.example back/.env
+cp front/.env.example front/.env
 task start
 ```
 

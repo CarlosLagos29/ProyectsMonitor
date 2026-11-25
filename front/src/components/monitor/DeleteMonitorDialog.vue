@@ -25,7 +25,7 @@
       <div class="flex-1 space-y-4 px-5 py-4">
         <CameraFeed
           class="h-24"
-          :noise="0.32"
+          :noise="NOISE.down"
           :message="$t('monitor.delete.disconnecting')"
           message-class="text-[24px] text-foreground"
         />
@@ -71,6 +71,7 @@ import type { Monitor } from '@/api/api.types'
 import { describeError } from '@/api/errors'
 import CameraFeed from '@/components/layout/CameraFeed.vue'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
+import { NOISE } from '@/constants'
 import { useMonitorsStore } from '@/stores/monitors'
 import { formatHoursMinutes } from '@/utils/time'
 
@@ -98,6 +99,7 @@ export default {
     }
   },
   computed: {
+    NOISE: () => NOISE,
     isGuestMonitor(): boolean {
       return this.monitor !== null && !this.monitor.owned
     },

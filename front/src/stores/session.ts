@@ -21,7 +21,8 @@ function readStoredSession(): Session | null {
       return null
     }
     return { token: stored.token, expiresAt, user: stored.user }
-  } catch {
+  } catch (error) {
+    console.error(error)
     return null
   }
 }
@@ -38,8 +39,8 @@ function writeStoredSession(session: Session | null) {
     } else {
       localStorage.removeItem(STORAGE_KEY)
     }
-  } catch {
-    return
+  } catch (error) {
+    console.error(error)
   }
 }
 
@@ -79,6 +80,10 @@ export const useSessionStore = defineStore('session', {
       this.user = me.user
       this.expiresAt = me.expiresAt
       this.limits = me.limits
+      if (this.token) {
+        writeStoredSession({ token: this.token, expiresAt: me.expiresAt, user: me.user })
+      }
+      this.scheduleExpiry()
     },
 
     logout() {

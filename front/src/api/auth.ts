@@ -1,9 +1,7 @@
 import type { LoginRequestDto, MeResponseDto, SessionResponseDto } from './dto/auth.dto'
-import { API_PREFIX, http } from './http'
+import { AUTH_PATH, http } from './http'
 import { toMe, toSession } from './mappers/session.mapper'
 import type { Me, Session } from './api.types'
-
-const AUTH_PATH = `${API_PREFIX}/auth`
 
 export async function startGuest(): Promise<Session> {
   const { data } = await http.post<SessionResponseDto>(`${AUTH_PATH}/guest`)

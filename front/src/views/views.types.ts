@@ -1,8 +1,6 @@
 import type { CheckSeries, Monitor } from '@/api/api.types'
 import type { ErrorMessage } from '@/api/errors'
 
-export type GuestBlock = 'RATE_LIMITED' | 'GUEST_CAPACITY_REACHED'
-
 export interface LoginData {
   email: string
   password: string
@@ -17,7 +15,6 @@ export interface LoginData {
   enteringAsGuest: boolean
   guestError: ErrorMessage | null
   guestWaitSeconds: number
-  guestBlock: GuestBlock | null
   guestTimer: ReturnType<typeof setInterval> | undefined
 }
 

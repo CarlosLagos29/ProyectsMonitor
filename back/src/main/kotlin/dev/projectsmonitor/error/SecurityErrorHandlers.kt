@@ -32,7 +32,7 @@ class ForbiddenForRoleHandler : AccessDeniedHandler {
     ) = response.writeProblem(HttpStatus.FORBIDDEN, ApiErrorReason.FORBIDDEN_FOR_ROLE, "Not allowed for your role")
 }
 
-private val PROBLEM_JSON = JsonMapper.builder()
+private val PROBLEM_MAPPER = JsonMapper.builder()
     .addMixIn(ProblemDetail::class.java, ProblemDetailJacksonMixin::class.java)
     .build()
 
@@ -40,5 +40,5 @@ fun HttpServletResponse.writeProblem(status: HttpStatus, reason: ApiErrorReason,
     this.status = status.value()
     contentType = MediaType.APPLICATION_PROBLEM_JSON_VALUE
     characterEncoding = Charsets.UTF_8.name()
-    PROBLEM_JSON.writeValue(writer, problem(status, reason, detail))
+    PROBLEM_MAPPER.writeValue(writer, problem(status, reason, detail))
 }

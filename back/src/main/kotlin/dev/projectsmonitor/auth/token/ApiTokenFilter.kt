@@ -29,7 +29,7 @@ class ApiTokenFilter(private val apiToken: String) : OncePerRequestFilter() {
     }
 
     private fun isValid(header: String?): Boolean {
-        if (apiToken.isBlank() || header == null || !header.startsWith(BEARER_PREFIX)) return false
+        if (header == null || !header.startsWith(BEARER_PREFIX)) return false
         return MessageDigest.isEqual(header.removePrefix(BEARER_PREFIX).toByteArray(), apiToken.toByteArray())
     }
 }

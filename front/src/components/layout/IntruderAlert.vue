@@ -17,7 +17,7 @@
     <div v-else class="relative size-full">
       <CameraFeed
         class="size-full rounded-none! border-0!"
-        :noise="0.6"
+        :noise="NOISE.intruder"
         rec="on"
         label="Cam 00"
         :stamp="stamp"
@@ -37,6 +37,8 @@
 
 <script lang="ts">
 import { RotateCw } from 'lucide-vue-next'
+
+import { NOISE } from '@/constants'
 
 import type { IntruderAlertData } from '../components.types'
 import CameraFeed from './CameraFeed.vue'
@@ -63,6 +65,9 @@ export default {
       scareTimer: undefined,
     }
   },
+  computed: {
+    NOISE: () => NOISE,
+  },
   watch: {
     open(open: boolean) {
       if (open) {
@@ -77,24 +82,33 @@ export default {
     start() {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       this.phase = reducedMotion ? 'alert' : 'scare'
-      ;(this.$refs.dialog as HTMLDialogElement).showModal()
+      this.showDialog()
       this.scream()
       this.scareTimer = setTimeout(() => {
         this.phase = 'alert'
       }, SCARE_MS)
     },
+    showDialog() {
+      const dialog = this.$refs.dialog
+      if (dialog instanceof HTMLDialogElement) {
+        dialog.showModal()
+      }
+    },
     scream() {
-      const audio = this.$refs.audio as HTMLAudioElement
+      const audio = this.$refs.audio
+      if (!(audio instanceof HTMLAudioElement)) {
+        return
+      }
       const context = new AudioContext()
       const gain = context.createGain()
       gain.gain.value = SCREAM_GAIN
       context.createMediaElementSource(audio).connect(gain).connect(context.destination)
-      context.resume().catch(() => undefined)
-      audio.play().catch(() => undefined)
+      context.resume().catch(console.error)
+      audio.play().catch(console.error)
     },
     reopen() {
       if (this.open) {
-        ;(this.$refs.dialog as HTMLDialogElement).showModal()
+        this.showDialog()
       }
     },
     reload() {

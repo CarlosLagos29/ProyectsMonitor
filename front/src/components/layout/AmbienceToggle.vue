@@ -26,7 +26,8 @@ const UNLOCK_EVENTS = ['click', 'touchend', 'keydown'] as const
 function readEnabled(): boolean {
   try {
     return localStorage.getItem(STORAGE_KEY) !== 'off'
-  } catch {
+  } catch (error) {
+    console.error(error)
     return true
   }
 }
@@ -45,7 +46,7 @@ export default {
   },
   beforeUnmount() {
     UNLOCK_EVENTS.forEach((event) => window.removeEventListener(event, this.unlock))
-    this.context?.close().catch(() => undefined)
+    this.context?.close().catch(console.error)
   },
   methods: {
     async unlock() {
@@ -65,7 +66,8 @@ export default {
         source.loop = true
         source.connect(gain).connect(context.destination)
         source.start()
-      } catch {
+      } catch (error) {
+        console.error(error)
         this.context = null
       }
     },
@@ -73,11 +75,13 @@ export default {
       this.enabled = !this.enabled
       try {
         localStorage.setItem(STORAGE_KEY, this.enabled ? 'on' : 'off')
-      } catch {}
+      } catch (error) {
+        console.error(error)
+      }
       if (this.enabled) {
-        this.context?.resume().catch(() => undefined)
+        this.context?.resume().catch(console.error)
       } else {
-        this.context?.suspend().catch(() => undefined)
+        this.context?.suspend().catch(console.error)
       }
     },
   },

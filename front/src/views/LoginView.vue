@@ -13,23 +13,10 @@
     <InfoNotice v-if="exitReason" :tag="$t('login.expiredTag')" tone="warning" role="alert">
       {{ $t('login.expired') }}
     </InfoNotice>
-    <InfoNotice
-      v-if="guestBlock === 'RATE_LIMITED' && guestWaitSeconds > 0"
-      :tag="$t('login.blockedTag')"
-      tone="destructive"
-      role="alert"
-    >
+    <InfoNotice v-if="guestBlocked" :tag="$t('login.blockedTag')" tone="destructive" role="alert">
       {{ $t('login.blocked') }}
       <span class="font-cam text-[20px]" aria-live="polite">{{ guestCountdown }}</span
       >.
-    </InfoNotice>
-    <InfoNotice
-      v-else-if="guestBlock === 'GUEST_CAPACITY_REACHED'"
-      :tag="$t('login.fullTag')"
-      tone="warning"
-      role="alert"
-    >
-      {{ $t('login.full') }}
     </InfoNotice>
     <InfoNotice v-else-if="guestError" :tag="$t('common.error')" tone="destructive" role="alert">
       {{ $t(guestError.key, guestError.params) }}
@@ -128,7 +115,7 @@ import { formatClock, formatCountdown } from '@/utils/time'
 import type { LoginData } from './views.types'
 
 const CLOCK_TICK_MS = 15_000
-const DEFAULT_CAPACITY_WAIT_SECONDS = 60
+const DEFAULT_GUEST_WAIT_SECONDS = 60
 const INTRUDER_ATTEMPTS = 5
 
 export default {
@@ -149,7 +136,6 @@ export default {
       enteringAsGuest: false,
       guestError: null,
       guestWaitSeconds: 0,
-      guestBlock: null,
       guestTimer: undefined,
     }
   },
@@ -171,7 +157,7 @@ export default {
       return this.failedAttempts >= INTRUDER_ATTEMPTS
     },
     guestBlocked(): boolean {
-      return this.guestBlock !== null && this.guestWaitSeconds > 0
+      return this.guestWaitSeconds > 0
     },
   },
   mounted() {
@@ -214,8 +200,8 @@ export default {
         await this.$router.push({ name: 'home' })
       } catch (error) {
         const apiError = toApiError(error)
-        if (apiError.reason === 'RATE_LIMITED' || apiError.reason === 'GUEST_CAPACITY_REACHED') {
-          this.blockGuest(apiError.reason, apiError.retryAfter ?? DEFAULT_CAPACITY_WAIT_SECONDS)
+        if (apiError.reason === 'RATE_LIMITED') {
+          this.blockGuest(apiError.retryAfter ?? DEFAULT_GUEST_WAIT_SECONDS)
         } else {
           this.guestError = describeError(apiError)
         }
@@ -223,15 +209,13 @@ export default {
         this.enteringAsGuest = false
       }
     },
-    blockGuest(reason: 'RATE_LIMITED' | 'GUEST_CAPACITY_REACHED', seconds: number) {
+    blockGuest(seconds: number) {
       clearInterval(this.guestTimer)
-      this.guestBlock = reason
       this.guestWaitSeconds = seconds
       this.guestTimer = setInterval(() => {
         this.guestWaitSeconds -= 1
         if (this.guestWaitSeconds <= 0) {
           clearInterval(this.guestTimer)
-          this.guestBlock = null
         }
       }, 1_000)
     },

@@ -2,7 +2,7 @@
   <section class="mx-auto max-w-190 space-y-6 py-6 text-center">
     <CameraFeed
       class="h-75 sm:h-95"
-      :noise="0.32"
+      :noise="NOISE.down"
       rec="off"
       :label="`Cam ?? · ${$t('monitorDetail.notFound.label')}`"
       stamp="Err 404"
@@ -22,9 +22,13 @@
 import { ArrowLeft } from 'lucide-vue-next'
 
 import CameraFeed from '@/components/layout/CameraFeed.vue'
+import { NOISE } from '@/constants'
 
 export default {
   name: 'NotFoundView',
   components: { ArrowLeft, CameraFeed },
+  computed: {
+    NOISE: () => NOISE,
+  },
 }
 </script>

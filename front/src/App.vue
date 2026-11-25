@@ -4,7 +4,7 @@
     <InfoNotice v-if="!serverUp" :tag="$t('serverWaking.tag')" tone="warning" dashed role="status">
       {{ $t('serverWaking.detail', { minutes: 1 }) }}
     </InfoNotice>
-    <RouterView />
+    <RouterView :key="viewKey" />
   </main>
 </template>
 
@@ -18,6 +18,7 @@ import { useSessionStore } from '@/stores/session'
 
 interface AppData {
   serverUp: boolean
+  viewKey: number
   wakeTimer: ReturnType<typeof setTimeout> | undefined
   keepAliveTimer: ReturnType<typeof setInterval> | undefined
 }
@@ -31,6 +32,7 @@ export default {
   data(): AppData {
     return {
       serverUp: true,
+      viewKey: 0,
       wakeTimer: undefined,
       keepAliveTimer: undefined,
     }
@@ -70,9 +72,12 @@ export default {
       }
     },
     onServerUp() {
+      if (!this.serverUp) {
+        this.viewKey += 1
+      }
       this.serverUp = true
       if (this.isActive && !this.limits) {
-        this.loadMe().catch(() => undefined)
+        this.loadMe().catch(console.error)
       }
     },
   },
