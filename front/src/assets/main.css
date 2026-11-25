@@ -32,60 +32,28 @@
   src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
 }
 
-:root {
-  --background: #0a0d0b;
-  --card: #121714;
-  --muted: #0e1310;
-  --border: #26302a;
-  --input: #26302a;
-  --skeleton: #1c2420;
-  --foreground: #d8e3da;
-  --muted-foreground: #8a9a8e;
-  --primary: #b8f2c2;
-  --primary-foreground: #0a0d0b;
-  --ring: #b8f2c2;
-  --destructive: #ff5a4f;
-  --warning: #f2c14e;
-  --feed: #0b100d;
-  --rec: #ff3b30;
-  --rec-off: #5e6b63;
-  --switch-off: #4a5a50;
+@theme {
+  --color-background: #0a0d0b;
+  --color-card: #121714;
+  --color-muted: #0e1310;
+  --color-border: #26302a;
+  --color-skeleton: #1c2420;
+  --color-foreground: #d8e3da;
+  --color-muted-foreground: #8a9a8e;
+  --color-primary: #b8f2c2;
+  --color-primary-foreground: #0a0d0b;
+  --color-destructive: #ff5a4f;
+  --color-warning: #f2c14e;
+  --color-feed: #0b100d;
+  --color-rec: #ff3b30;
+  --color-rec-off: #5e6b63;
+  --color-switch-off: #4a5a50;
 
-  --status-up: #7ee08a;
-  --status-down: #ff5a4f;
-  --status-blocked: #f2c14e;
-  --status-rejected: #c792ea;
-  --status-none: #7d8c82;
-
-  --scanlines: repeating-linear-gradient(0deg, #b8f2c20f 0 1px, transparent 1px 3px);
-  --vignette: radial-gradient(ellipse at center, #b8f2c21a, transparent 72%);
-
-  color-scheme: dark;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-card: var(--card);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-skeleton: var(--skeleton);
-  --color-foreground: var(--foreground);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-ring: var(--ring);
-  --color-destructive: var(--destructive);
-  --color-warning: var(--warning);
-  --color-feed: var(--feed);
-  --color-rec: var(--rec);
-  --color-rec-off: var(--rec-off);
-  --color-switch-off: var(--switch-off);
-  --color-status-up: var(--status-up);
-  --color-status-down: var(--status-down);
-  --color-status-blocked: var(--status-blocked);
-  --color-status-rejected: var(--status-rejected);
-  --color-status-none: var(--status-none);
+  --color-status-up: #7ee08a;
+  --color-status-down: #ff5a4f;
+  --color-status-blocked: #f2c14e;
+  --color-status-rejected: #c792ea;
+  --color-status-none: #7d8c82;
 
   --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
@@ -94,21 +62,21 @@
 
 @layer base {
   html {
-    background-color: var(--background);
+    @apply bg-background;
+    color-scheme: dark;
   }
 
   body {
-    @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+    @apply min-h-dvh font-sans text-foreground antialiased;
   }
 
   :focus-visible {
-    outline: 2px solid var(--ring);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 
   ::selection {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
+    @apply bg-primary text-primary-foreground;
   }
 }
 
@@ -142,7 +110,7 @@
   }
 
   .field {
-    @apply min-h-11 w-full min-w-0 rounded-sm border border-input bg-background px-3 text-foreground placeholder:text-muted-foreground/70 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:border-dashed disabled:bg-muted disabled:text-muted-foreground;
+    @apply min-h-11 w-full min-w-0 rounded-sm border border-border bg-background px-3 text-foreground placeholder:text-muted-foreground/70 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:border-dashed disabled:bg-muted disabled:text-muted-foreground;
   }
 
   .field-error {
@@ -166,11 +134,13 @@
   }
 
   .scanlines {
-    background-image: var(--scanlines), var(--vignette);
+    background-image:
+      repeating-linear-gradient(0deg, #b8f2c20f 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at center, #b8f2c21a, transparent 72%);
   }
 
   .dialog {
-    @apply fixed inset-0 m-auto! h-fit max-h-[calc(100dvh-2rem)] w-95 max-w-[calc(100%-2rem)] overflow-y-auto rounded-md border border-border bg-card p-0 text-foreground shadow-2xl shadow-black/60 max-sm:m-0! max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none;
+    @apply fixed inset-0 m-auto! h-fit max-h-[calc(100dvh-2rem)] w-95 max-w-[calc(100%-2rem)] overflow-y-auto rounded-md border border-border bg-card p-0 text-foreground shadow-2xl shadow-black/60;
   }
 
   .dialog::backdrop {

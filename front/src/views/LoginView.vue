@@ -39,11 +39,11 @@
       <h2 class="text-lg font-semibold">{{ $t('login.guestTitle') }}</h2>
       <button
         type="button"
-        class="btn btn-primary min-h-15 w-full text-[30px]"
+        class="btn btn-primary min-h-13.5 w-full text-[27px]"
         :disabled="enteringAsGuest || guestBlocked"
         @click="enterAsGuest"
       >
-        <Cctv :size="26" aria-hidden="true" />
+        <Cctv :size="23" aria-hidden="true" />
         {{ enteringAsGuest ? $t('login.connecting') : $t('login.guestStart') }}
       </button>
       <p class="text-sm text-muted-foreground">
@@ -55,7 +55,9 @@
 
     <form class="space-y-4" novalidate @submit.prevent="submitLogin">
       <div class="space-y-1">
-        <label for="login-email" class="text-sm font-medium">{{ $t('login.email') }}</label>
+        <label for="login-email" class="mb-1 block text-sm font-medium">{{
+          $t('login.email')
+        }}</label>
         <input
           id="login-email"
           v-model.trim="email"
@@ -71,7 +73,9 @@
         </p>
       </div>
       <div class="space-y-1">
-        <label for="login-password" class="text-sm font-medium">{{ $t('login.password') }}</label>
+        <label for="login-password" class="mb-1 block text-sm font-medium">{{
+          $t('login.password')
+        }}</label>
         <div class="flex gap-2">
           <input
             id="login-password"
@@ -106,9 +110,7 @@
       </button>
     </form>
 
-    <div class="flex justify-center pt-2">
-      <LanguageSwitch />
-    </div>
+    <IntruderAlert :open="intruderDetected" :stamp="clock" />
   </section>
 </template>
 
@@ -119,7 +121,7 @@ import { mapActions, mapState } from 'pinia'
 import { describeError, toApiError } from '@/api/errors'
 import CameraFeed from '@/components/layout/CameraFeed.vue'
 import InfoNotice from '@/components/layout/InfoNotice.vue'
-import LanguageSwitch from '@/components/layout/LanguageSwitch.vue'
+import IntruderAlert from '@/components/layout/IntruderAlert.vue'
 import { useSessionStore } from '@/stores/session'
 import { formatClock, formatCountdown } from '@/utils/time'
 
@@ -127,10 +129,11 @@ import type { LoginData } from './views.types'
 
 const CLOCK_TICK_MS = 15_000
 const DEFAULT_CAPACITY_WAIT_SECONDS = 60
+const INTRUDER_ATTEMPTS = 5
 
 export default {
   name: 'LoginView',
-  components: { CameraFeed, Cctv, CircleAlert, Eye, EyeOff, InfoNotice, LanguageSwitch },
+  components: { CameraFeed, Cctv, CircleAlert, Eye, EyeOff, InfoNotice, IntruderAlert },
   data(): LoginData {
     return {
       email: '',
@@ -142,6 +145,7 @@ export default {
       serverFieldErrors: {},
       loggingIn: false,
       loginError: null,
+      failedAttempts: 0,
       enteringAsGuest: false,
       guestError: null,
       guestWaitSeconds: 0,
@@ -163,6 +167,9 @@ export default {
     guestCountdown(): string {
       return formatCountdown(this.guestWaitSeconds)
     },
+    intruderDetected(): boolean {
+      return this.failedAttempts >= INTRUDER_ATTEMPTS
+    },
     guestBlocked(): boolean {
       return this.guestBlock !== null && this.guestWaitSeconds > 0
     },
@@ -183,6 +190,7 @@ export default {
       this.serverFieldErrors = {}
       this.loginError = null
       if (!this.email || !this.password) {
+        this.failedAttempts += 1
         return
       }
       this.loggingIn = true
@@ -193,6 +201,7 @@ export default {
         const apiError = toApiError(error)
         this.serverFieldErrors = apiError.fieldErrors
         this.loginError = describeError(apiError)
+        this.failedAttempts += 1
       } finally {
         this.loggingIn = false
       }

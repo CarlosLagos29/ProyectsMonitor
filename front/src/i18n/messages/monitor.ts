@@ -90,7 +90,7 @@ export const monitorEs = {
   check: {
     running: 'Chequeando…',
     retryIn: 'Reintentar en {seconds} s',
-    now: 'Chequear ahora',
+    now: 'Chequear',
   },
   uptime: {
     checks: 'sin chequeos | {n} chequeo | {n} chequeos',

@@ -47,3 +47,13 @@ export interface GuestShiftData {
 export interface ChecksTableData {
   visibleRows: number
 }
+
+export interface IntruderAlertData {
+  phase: 'scare' | 'alert'
+  scareTimer: ReturnType<typeof setTimeout> | undefined
+}
+
+export interface AmbienceToggleData {
+  enabled: boolean
+  context: AudioContext | null
+}

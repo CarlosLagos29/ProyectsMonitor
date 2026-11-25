@@ -41,10 +41,19 @@
       </div>
 
       <footer class="flex justify-end gap-2 border-t border-border px-5 py-3">
-        <button type="button" class="btn btn-secondary" @click="$emit('close')">
+        <button
+          type="button"
+          class="btn btn-secondary max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
+          @click="$emit('close')"
+        >
           {{ $t('common.cancel') }}
         </button>
-        <button type="button" class="btn btn-danger-solid" :disabled="deleting" @click="confirm">
+        <button
+          type="button"
+          class="btn btn-danger-solid max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
+          :disabled="deleting"
+          @click="confirm"
+        >
           <Trash2 :size="18" aria-hidden="true" />
           {{ deleting ? $t('monitor.delete.deleting') : $t('common.delete') }}
         </button>

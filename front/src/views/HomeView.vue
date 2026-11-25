@@ -9,7 +9,7 @@
       <button
         v-if="activeScope === 'OWN' && canCreate"
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
         :disabled="loading"
         @click="openCreate"
       >
@@ -24,7 +24,7 @@
         :key="tab.id"
         type="button"
         role="tab"
-        class="btn text-[22px]"
+        class="btn text-[22px] max-sm:min-h-9 max-sm:px-3 max-sm:text-[17px]"
         :class="activeScope === tab.id ? 'btn-primary' : 'btn-secondary'"
         :aria-selected="activeScope === tab.id"
         @click="setScope(tab.id)"
@@ -100,27 +100,27 @@
         <nav
           v-if="totalPages > 1"
           :aria-label="$t('home.pagesLabel')"
-          class="flex flex-wrap items-center justify-center gap-3"
+          class="flex items-center justify-center gap-3"
         >
           <button
             type="button"
-            class="btn btn-secondary"
+            class="btn btn-secondary max-sm:size-9 max-sm:min-h-9 max-sm:px-0"
+            :aria-label="$t('home.previous')"
             :disabled="fetching || currentPage === 0"
             @click="fetchPage(currentPage - 1)"
           >
             <ChevronLeft :size="18" aria-hidden="true" />
-            {{ $t('home.previous') }}
           </button>
           <span class="font-cam text-[22px] uppercase" aria-live="polite">
             {{ $t('home.page', { current: currentPage + 1, total: totalPages }) }}
           </span>
           <button
             type="button"
-            class="btn btn-secondary"
+            class="btn btn-secondary max-sm:size-9 max-sm:min-h-9 max-sm:px-0"
+            :aria-label="$t('home.next')"
             :disabled="fetching || currentPage >= totalPages - 1"
             @click="fetchPage(currentPage + 1)"
           >
-            {{ $t('home.next') }}
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
         </nav>

@@ -1,6 +1,6 @@
 import { Ban, CircleCheck, CircleDashed, CircleX, ShieldAlert } from 'lucide-vue-next'
 
-import type { HealthStatus } from '@/api/api.types'
+import type { CheckResult, HealthStatus } from '@/api/api.types'
 
 export type StatusKey = HealthStatus | 'NONE'
 
@@ -22,4 +22,8 @@ export const STATUS_ICON = {
 
 export function toStatusKey(status: HealthStatus | null | undefined): StatusKey {
   return status ?? 'NONE'
+}
+
+export function formatCheckLatency(result: CheckResult): string {
+  return result.status === 'REJECTED' ? '—' : `${result.latencyMs} ms`
 }

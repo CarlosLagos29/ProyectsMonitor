@@ -1,6 +1,6 @@
 <template>
-  <AppHeader v-if="showHeader" />
-  <main class="mx-auto w-full max-w-300 space-y-5 px-4 py-6">
+  <AppHeader v-if="$route.name" />
+  <main class="mx-auto w-full max-w-300 space-y-5 px-4 py-6 sm:pt-8.5">
     <InfoNotice v-if="!serverUp" :tag="$t('serverWaking.tag')" tone="warning" dashed role="status">
       {{ $t('serverWaking.detail', { minutes: 1 }) }}
     </InfoNotice>
@@ -37,9 +37,6 @@ export default {
   },
   computed: {
     ...mapState(useSessionStore, ['isActive', 'limits']),
-    showHeader(): boolean {
-      return this.$route.name !== undefined && !this.$route.meta.public
-    },
   },
   watch: {
     isActive(active: boolean) {
