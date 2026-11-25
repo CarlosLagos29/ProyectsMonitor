@@ -82,14 +82,23 @@ export default {
     start() {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       this.phase = reducedMotion ? 'alert' : 'scare'
-      ;(this.$refs.dialog as HTMLDialogElement).showModal()
+      this.showDialog()
       this.scream()
       this.scareTimer = setTimeout(() => {
         this.phase = 'alert'
       }, SCARE_MS)
     },
+    showDialog() {
+      const dialog = this.$refs.dialog
+      if (dialog instanceof HTMLDialogElement) {
+        dialog.showModal()
+      }
+    },
     scream() {
-      const audio = this.$refs.audio as HTMLAudioElement
+      const audio = this.$refs.audio
+      if (!(audio instanceof HTMLAudioElement)) {
+        return
+      }
       const context = new AudioContext()
       const gain = context.createGain()
       gain.gain.value = SCREAM_GAIN
@@ -99,7 +108,7 @@ export default {
     },
     reopen() {
       if (this.open) {
-        ;(this.$refs.dialog as HTMLDialogElement).showModal()
+        this.showDialog()
       }
     },
     reload() {
